@@ -1,3 +1,17 @@
+x := x + 5;
 
-x := (3 + 5 / 2) * (7 / 8 - 10);
-if (x = 3) then {x := 5;} else {x := 4;};
+while (y > x && x > z) {
+    if (x + 5 = 6) then {
+        z := 1 + 2;
+    }
+    else {
+        t := t - 2 * 5 + (5 / t);
+    };
+    assert t > 5;
+    skip;
+    assert 6 + 6 > x;
+    while (t > 6) {
+        inv t;
+        t := t + t || t;
+    };
+};

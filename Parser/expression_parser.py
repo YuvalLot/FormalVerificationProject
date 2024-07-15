@@ -12,7 +12,9 @@ INFIXES = {
     "op<": 7,
     "op>=": 7,
     "op<=": 7,
-    "op=": 9
+    "op=": 9,
+    "op&&": 11,
+    "op||": 11,
 }
 
 PREFIXES = ["op+", "op-"]
@@ -45,14 +47,20 @@ def collapse_once(node_stack, op_stack):
     return 0
 
 
+# given a mathematical expression (in infix notation)
+# produce a parsing tree of the expression
+# for success, return (0, expression, None)
+# for failure, return (1, error_token, error_message)
 def parse_expression(block: list[Token]):
-    node_stack = []
-    op_stack = []
+    node_stack = []  # stack for nodes (expression)
+    op_stack = []  # stack for operations
     last_added = 1  # 0 for node, 1 for operator
 
     for tok in block:
         if tok.name in IDENTIFIERS:
             if last_added == 0:
+                # two nodes added one after the other, 
+                # for now interpert as application of first on second
                 top = node_stack.pop()
                 node_stack.append(
                     ParserNode("apply", tok, [top], is_expression=True)
@@ -67,7 +75,7 @@ def parse_expression(block: list[Token]):
             if last_added == 1:
                 # must interperatr as an infix
                 if tok.name not in PREFIXES:
-                    return tok, f"{tok.value} not a prefix"
+                    return 1, tok, f"{tok.value} not a prefix"
                 op_stack.append((tok, 'P'))
             else:
                 # infix 
@@ -87,14 +95,14 @@ def parse_expression(block: list[Token]):
 
         elif tok.name == "rparen":
             if last_added == 1:
-                return tok, "Cannot close"      
+                return 1, tok, "illegal rparen"      
 
             while len(op_stack) > 0 and op_stack[-1][1] != "LP":
                 if collapse_once(node_stack, op_stack) == 1:
-                    return op_stack[-1][0], "Illegal token"
+                    return 1, op_stack[-1][0], "Illegal token"
             
             if len(op_stack) == 0:
-                return tok, "unopened RP"
+                return 1, tok, "unopened RP"
             
             op_stack.pop()
 
@@ -102,13 +110,13 @@ def parse_expression(block: list[Token]):
 
         
         else:
-            return tok, "unrecognized token"
+            return 1, tok, "unrecognized token"
     
     while len(op_stack) > 0:
         if collapse_once(node_stack, op_stack) == 1:
-            return op_stack[-1][0], "Illegal token"
+            return 1, op_stack[-1][0], "Illegal token"
 
     if len(node_stack) != 1:
-        return None, "Empty Expression"
+        return 1, block[0], "Illegal expression"
     
-    return node_stack[0]
+    return 0, node_stack[0], None
