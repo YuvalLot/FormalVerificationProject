@@ -1,5 +1,5 @@
 import re
-from Tokenizer.token_type import TokenType, valid_token_types
+from Parser.Tokenizer.token_type import TokenType, valid_token_types
 
 class Token:
 
@@ -11,6 +11,9 @@ class Token:
 
     def __str__(self) -> str:
         return f"({self.name}, {self.value}, {self.lineno}, {self.charno})"
+    
+    def __repr__(self) -> str:
+        return str(self)
 
 def tokenize(input_string):
     tokens = []
@@ -41,7 +44,7 @@ def tokenize(input_string):
             break
 
         if not found_token:
-            return [Token("error", "error", lineno, charno)], 1
+            return Token("error", "error", lineno, charno), 1
     
     return tokens, 0
 
