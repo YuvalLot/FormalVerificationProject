@@ -131,6 +131,19 @@ def parse_command(curr_pos: int, blocks: list):
             
             i += 3
 
+        elif is_token(block, "print"):
+            # print command
+            # expect:
+            #  print expression ;
+            if i + 2 >= len(blocks) or \
+                not is_expression(blocks[i + 1]) or \
+                not is_token(blocks[i + 2], "semi"):
+                return 1, block, "Illegal Print Structure"
+            
+            commands.append(ParserNode("print", block, [blocks[i+1]]))
+            
+            i += 3
+
         elif i + 1 < len(blocks) and is_token(blocks[i+1], "assign"):
             # we're in an assign command
             # we expect:

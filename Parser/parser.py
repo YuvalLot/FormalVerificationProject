@@ -8,7 +8,7 @@ from Parser.command_parser import parse_command
 
 STRUCTURE_TOKENS = [
     "semi", "lcurly", "rcurly", "if", "then", "else", "while",
-    "assign", "skip", "assert", "inv",
+    "assign", "skip", "assert", "inv", "print",
 ]
 
 
@@ -66,7 +66,7 @@ def parse(token_list: list[Token]):
         print(f"EOF error in {lineno}.{charno}.")
         return
 
-    print(command.to_python(tab_char="  "))
+    return 0, command
 
     
 

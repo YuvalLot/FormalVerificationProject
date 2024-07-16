@@ -31,7 +31,10 @@ class ParserNode:
             op = self.name[-1]
             if op == "=":
                 op = "=="
-            raw_string = tabs*tab_char + f"({self.children[0].to_python(tab_char=tab_char)} {op} {self.children[1].to_python(tab_char=tab_char)})"
+            if len(self.children) == 1:
+                raw_string = tabs*tab_char + f"({op} {self.children[0].to_python(tab_char=tab_char)})"
+            else:
+                raw_string = tabs*tab_char + f"({self.children[0].to_python(tab_char=tab_char)} {op} {self.children[1].to_python(tab_char=tab_char)})"
         elif self.name == "while":
             cond = self.children[0].to_python(tab_char=tab_char)
             code = self.children[1].to_python(tabs + 1, tab_char=tab_char)
@@ -58,8 +61,9 @@ class ParserNode:
         return raw_string
 
 POSSIBLE_NODE_NAMES = [
-    "op+", "op-", "op*", "op/", "leaf",                      # expression types
-    "while", "if", "skip", "assign", "assert", "inv", "seq"  # command types
+    "op+", "op-", "op*", "op/", "op&&", "op||", "op~", "leaf",       # expression types
+    "while", "if", "skip", "assign", "assert", "inv", "seq",  # command types
+    "print"  
 ]
 
 

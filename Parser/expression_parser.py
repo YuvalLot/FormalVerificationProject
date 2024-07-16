@@ -17,9 +17,10 @@ INFIXES = {
     "op||": 11,
 }
 
-PREFIXES = ["op+", "op-"]
+PREFIXES = ["op+", "op-", "op~"]
 
 OPERATORS = set(INFIXES.keys())
+OPERATORS.add("op~")
 
 IDENTIFIERS = ["var", "int"]
 
@@ -79,6 +80,8 @@ def parse_expression(block: list[Token]):
                 op_stack.append((tok, 'P'))
             else:
                 # infix 
+                if tok.name not in INFIXES:
+                    return 1, tok, f"{tok.value} not an infix"
                 while len(op_stack) > 0 and op_stack[-1][1] != "LP" and \
                     (op_stack[-1][1] == "P" or 
                         INFIXES[op_stack[-1][0].name] <= INFIXES[tok.name]):
