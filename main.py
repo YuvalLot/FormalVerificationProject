@@ -13,12 +13,13 @@ tokens, success = Tokens.tokenize(text)
 
 if success:
     print(f"Token error: {tokens}")
+    exit()
 
 failure, parsed = Parser.parse(tokens)
 
 if failure:
     print("Parsing error:", parsed)
-
+    exit()
 
 env = Enviornment()
 failure, msg = execute(parsed, env)

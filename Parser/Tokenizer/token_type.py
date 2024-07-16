@@ -33,6 +33,7 @@ valid_token_types = [TokenType(word, word) for word in reserved_words] + [
     TokenType("rcurly", r"\}"),
     
     TokenType("_ignore", r"[ \n\t]+"),
+    TokenType("_comment", r'\#.*'),
     TokenType("var", r"[a-zA-Z_][a-zA-Z0-9_]*"),
     TokenType("semi", r';')
 

@@ -1,8 +1,10 @@
+
 x := 5;
+
 n := 1;
 
-while x >= 1 {
-    n := n * x;
+while (x >= 1) {
+    n := n * while;
     x := x - 1;
 };
 
