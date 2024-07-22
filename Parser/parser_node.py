@@ -1,5 +1,28 @@
 
 from Parser.Tokenizer.tokens import Token
+import z3
+
+
+infix_to_function = {
+    "op+": lambda x, y: x + y,
+    "op-": lambda x, y: x - y,
+    "op*": lambda x, y: x * y,
+    "op/": lambda x, y: x / y,
+    "op>": lambda x, y: x>y,
+    "op<": lambda x, y : x<y,
+    "op<=": lambda x, y: x<=y,
+    "op>=": lambda x, y: x>=y,
+    "op=": lambda x, y: x==y,
+    "op!=": lambda x, y: x != y,
+    "op&&": lambda x, y: z3.And(x,y),
+    "op||": lambda x, y: z3.Or(x,y),
+}
+
+prefix_to_function = {
+    "op+": lambda x: x,
+    "op-": lambda x: - x,
+    "op!": lambda x: z3.Not(x) if z3.is_bool(x) else z3.Not(x != 0),
+}
 
 
 class ParserNode:
@@ -10,6 +33,12 @@ class ParserNode:
         self.value = value
         self.children = children
         self.is_expression = is_expression
+
+        self.is_loop_free = True
+        if self.name == "while":
+            self.is_loop_free = False
+        if any(not child.is_loop_free for child in children):
+            self.is_loop_free = False
 
     def __str__(self) -> str:
         if self.name == "leaf":
@@ -60,10 +89,68 @@ class ParserNode:
             return "unknown"
         return raw_string
 
+    def substitute(self, dictionary):
+        # dictionary: dict with {variable_name (str) : ParserNode}
+                
+        if self.name == "leaf":
+            if self.value.name == "var" and self.value.value in dictionary:
+                # possible problem: we "forget" info about the token
+                return dictionary[self.value.value]
+            else:
+                return self
+            
+        if self.name[:2] == "op":
+            return ParserNode(
+                self.name, self.value, 
+                [child.substitute(dictionary) for child in self.children],
+                is_expression=self.is_expression
+            )
+        
+        raise Exception("Not suppoerted (yet...)")
+
+    def to_z3_inner(self):
+        if not self.is_expression:
+            raise ValueError("should not happen")
+        
+        if self.name == "leaf":
+            if self.value.name == "int":
+                return z3.IntVal(self.value.value)
+            elif self.value.name == "var":
+                return z3.Int(self.value.value)
+            else:
+                raise ValueError(f"Unknown leaf type: {self.value.name}.")
+            
+        if self.name[:2] == "op":
+
+            if len(self.children) == 1:
+                if self.name in prefix_to_function:
+                    return prefix_to_function[self.name](self.children[0].to_z3_inner_inner())
+                raise ValueError("Exception: Not supported")
+            if len(self.children) == 2:
+                if self.name in infix_to_function:
+                    return infix_to_function[self.name](
+                        self.children[0].to_z3_inner(),
+                        self.children[1].to_z3_inner(),
+                    )
+                raise ValueError("Exception: Not supported")
+
+    def to_z3_bool(self):
+        expression = self.to_z3_inner()
+        if not z3.is_bool(expression):
+            return expression != 0
+        return expression
+    
+    def to_z3_int(self):
+        expression = self.to_z3_inner()
+        if not z3.is_int(expression):
+            return expression + 0
+        return expression
+
+
 POSSIBLE_NODE_NAMES = [
     "op+", "op-", "op*", "op/", "op&&", "op||", "op~", "leaf",       # expression types
     "while", "if", "skip", "assign", "assert", "inv", "seq",  # command types
-    "print"  
+    "print", "assume"
 ]
 
 

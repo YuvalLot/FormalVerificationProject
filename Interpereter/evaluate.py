@@ -20,12 +20,15 @@ infix_to_function = {
     "op<=": lambda x, y: int(x<=y),
     "op>=": lambda x, y: int(x>=y),
     "op=": lambda x, y: int(x==y),
+    "op!=": lambda x, y: int(x!=y),
+    "op&&": lambda x, y: x and y,
+    "op||": lambda x, y: x or y,
 }
 
 prefix_to_function = {
     "op+": lambda x: x,
-    "op-": lambda y: y,
-    "op~": lambda x: int(x == 0)
+    "op-": lambda x: - x,
+    "op!": lambda x: int(x == 0)
 }
 
 # for success: 0, value, None

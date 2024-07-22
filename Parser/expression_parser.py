@@ -13,14 +13,15 @@ INFIXES = {
     "op>=": 7,
     "op<=": 7,
     "op=": 9,
+    "op!=": 9,
     "op&&": 11,
     "op||": 11,
 }
 
-PREFIXES = ["op+", "op-", "op~"]
+PREFIXES = ["op+", "op-", "op!"]
 
 OPERATORS = set(INFIXES.keys())
-OPERATORS.add("op~")
+OPERATORS.add("op!")
 
 IDENTIFIERS = ["var", "int"]
 
