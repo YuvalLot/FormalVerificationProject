@@ -144,6 +144,19 @@ def parse_command(curr_pos: int, blocks: list):
             
             i += 3
 
+        elif is_token(block, "assume"):
+            # we're in a assume command
+            # we expect:
+            #  assume [cond_exp] ; 
+            if i + 2 >= len(blocks) or \
+                 not is_expression(blocks[i+1]) or \
+                 not is_token(blocks[i+2], "semi"):
+                return 1, block, "Illegal Assume Structure"
+            
+            commands.append(ParserNode("assume", block, [blocks[i+1]]))
+            
+            i += 3
+
         elif i + 1 < len(blocks) and is_token(blocks[i+1], "assign"):
             # we're in an assign command
             # we expect:

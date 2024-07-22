@@ -1,7 +1,7 @@
 
 flow for adding a feature to the language while:
 1. add token_type(s) in Parser.Tokenizer.token_type
-2. define in Parser.parser if the new token(s) are structural
+2. define in Parser.parser if the new token(s) is structural
 3. add a parsing behavior in :
     a. Parser.expression_parser , if expression 
     b. Parser.command_parser    , if command 
