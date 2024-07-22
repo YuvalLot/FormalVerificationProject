@@ -54,8 +54,7 @@ def parse(token_list: list[Token]):
             lineno, charno = end.lineno, end.charno
         else:
             lineno, charno =end.value.lineno, end.value.charno
-        print(f"Error in {lineno}.{charno}: {command}")
-        return 
+        return 1, f"Error in {lineno}.{charno}: {command}"
     
     if end != len(blocks):
         lineno, charno = 0, 0
@@ -63,8 +62,7 @@ def parse(token_list: list[Token]):
             lineno, charno = blocks[end].lineno, blocks[end].charno
         else:
             lineno, charno = blocks[end].value.lineno, blocks[end].value.charno
-        print(f"EOF error in {lineno}.{charno}.")
-        return
+        return 1, f"EOF error in {lineno}.{charno}."
 
     return 0, command
 

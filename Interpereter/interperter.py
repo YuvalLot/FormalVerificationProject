@@ -76,7 +76,7 @@ def execute(node: ParserNode, env=None):
         return 0, None
     
     elif node.name in ["assert", "inv", "assume"]:
-        exp = node.children
+        exp = node.children[0]
         
         fail, value, tok = evaluate(exp, env)
         if fail:

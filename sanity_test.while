@@ -1,16 +1,15 @@
 x := 5;
 
-assert {x=5};
+assert x = 5;
 
 n := 1;
 
-assert {x=5 && n=1};
+assert x=5 && n=1;
 
-if (n > 2){
+if (n > 2) then {
     x := 4;
-}
-else {
+} else {
     x := 2;
-}
+};
 
-assert {x=5 && n=1};
+assert x=5 && n=1;
