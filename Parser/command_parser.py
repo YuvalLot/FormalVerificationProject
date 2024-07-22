@@ -45,13 +45,22 @@ def parse_command(curr_pos: int, blocks: list):
             succ, i, while_command = parse_command(i + 3, blocks)
             if succ:
                 return succ, i, while_command
+            
             # assert it ends with an rcurly, semi-colon
             if i + 1 >= len(blocks) or \
                 not is_token(blocks[i], "rcurly") or \
                 not is_token(blocks[i+1], "semi"):
                 return 1, block, "Illegal While Structure"
 
-            commands.append(ParserNode("while", block, [while_cond, while_command]))
+            # while_command should be of ParserNode type: seq
+            # if the first element is an inv, pull it out and add it in the while
+            if len(while_command.children) > 0 and \
+                while_command.children[0].name == "inv":
+                invariance = while_command.children.pop(0)
+            else:
+                invariance = None
+
+            commands.append(ParserNode("while", block, [while_cond, invariance, while_command]))
             
             i += 2
             

@@ -14,7 +14,8 @@ POSSIBLE_NODE_NAMES = [
 """
 
 ALLOWED_COMMANDS = [
-    "skip", "assign", "seq", "print", "if", "assume" 
+    "skip", "assign", "seq", "print", "if", "assume",
+    "while"
 ]
 
 
@@ -47,8 +48,8 @@ def verification_condition(pre_cond: z3.BoolRef, code: ParserNode,
     
     if code.name in ["skip", "print"]:
         return [(z3.Implies(
-            pre_cond.to_z3(),
-            post_cond.to_z3()
+            pre_cond,
+            post_cond,
         ), line_number_of_post)]
     
     if code.name == "if":
@@ -126,5 +127,26 @@ def verification_condition(pre_cond: z3.BoolRef, code: ParserNode,
         condition_assumed = code.children[0].to_z3_bool()
         return [(z3.Implies(condition_assumed, post_cond), line_number_of_post)]
     
+    if code.name == "while":
+        while_cond, while_inv, while_body = code.children
+        print(while_cond, while_inv, while_cond)
+        if while_inv is None:
+            return [(post_cond, line_number_of_post)]
+        
+        while_inv_line = while_inv.value.lineno
+        while_inv = while_inv.children[0].to_z3_bool()
+        while_cond = while_cond.to_z3_bool()
+        
+        return [(z3.Implies(pre_cond, while_inv), while_inv_line), 
+                (z3.Implies(z3.And(while_inv, z3.Not(while_cond)), post_cond), 
+                 line_number_of_post)
+                ] + \
+                verification_condition(
+                    z3.And(while_inv, while_cond),
+                    while_body,
+                    while_inv, 
+                    while_inv_line
+                )
+
     else:
         raise ValueError(f"Error: command {code.name} not yet supported.")

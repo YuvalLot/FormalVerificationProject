@@ -37,7 +37,7 @@ class ParserNode:
         self.is_loop_free = True
         if self.name == "while":
             self.is_loop_free = False
-        if any(not child.is_loop_free for child in children):
+        if any(child and not child.is_loop_free for child in children):
             self.is_loop_free = False
 
     def __str__(self) -> str:

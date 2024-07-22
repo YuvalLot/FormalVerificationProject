@@ -19,13 +19,20 @@ def execute(node: ParserNode, env=None):
         env = Enviornment()
 
     if node.name == "while":
-        cond_exp, while_body = node.children
+        cond_exp, while_inv, while_body = node.children
         while True:
             fail, cond_val, tok = evaluate(cond_exp, env)
             if fail:
                 return fail,  f"Error in {tok.lineno}.{tok.charno}: {cond_val}"
             if not cond_val:
                 break
+            
+            if while_inv != None:
+                fail, inv_val, tok = evaluate(while_inv, env)
+                if fail:
+                    return fail,  f"Error in {tok.lineno}.{tok.charno}: {cond_val}"
+                if not inv_val:
+                    return 1, f"Inv Error in {while_inv.value.lineno}.{while_inv.value.charno}."
 
             fail, error_msg = execute(while_body, env)
             if fail:
