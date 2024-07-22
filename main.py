@@ -3,11 +3,11 @@ import Parser.Tokenizer.tokens as Tokens
 import Parser.parser as Parser
 from Interpereter.interperter import execute
 from Interpereter.enviornment import Enviornment
+import sys
 
-
-with open("file1.while", "r") as file1:
-    text = file1.read()
-
+file_name = "file1.while" if (len(sys.argv) == 1) else sys.argv[1]
+with open(file_name, "r") as file:
+    text = file.read()
 
 tokens, success = Tokens.tokenize(text)
 
