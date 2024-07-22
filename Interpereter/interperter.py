@@ -82,7 +82,7 @@ def execute(node: ParserNode, env=None):
         if fail:
             return fail,  f"Error in {tok.lineno}.{tok.charno}: {value}"
         
-        if not exp:
+        if not value:
             return 1, f"Assert Error in {node.value.lineno}.{node.value.charno}."
 
         return 0, None

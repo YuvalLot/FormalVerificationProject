@@ -21,6 +21,7 @@ def parse_command(curr_pos: int, blocks: list):
 
     while i < len(blocks):
         block = blocks[i]
+        
         if is_token(block, "while"):
             # we're in a while
             # we expect:

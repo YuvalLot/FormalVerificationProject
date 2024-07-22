@@ -31,7 +31,6 @@ prefix_to_function = {
 # for success: 0, value, None
 # for error:   1, error_msg, token
 def evaluate(node: ParserNode, env: Enviornment):
-    print(node)
     if node.name == "leaf":
         if node.value.name == "int":
             return 0, int(node.value.value), None
