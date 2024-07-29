@@ -23,6 +23,7 @@ infix_to_function = {
     "op!=": lambda x, y: int(x!=y),
     "op&&": lambda x, y: x and y,
     "op||": lambda x, y: x or y,
+     "op||": lambda x, y: (not x) or y,
 }
 
 prefix_to_function = {

@@ -16,6 +16,7 @@ infix_to_function = {
     "op!=": lambda x, y: x != y,
     "op&&": lambda x, y: z3.And(x,y),
     "op||": lambda x, y: z3.Or(x,y),
+    "op->": lambda x, y: z3.Implies(x, y),
 }
 
 prefix_to_function = {

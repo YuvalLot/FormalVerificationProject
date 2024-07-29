@@ -1,14 +1,19 @@
-
-x := y;
-assert x = y;
+assume i = 1;
+assume j = n;
+assume j > 0;
+assume x = z;
 
 while i > 0 {
-    inv x = y;
-    x := x - i;
-    assert x + i = y;
-    y := x + y;
-    assert 2 * x + i = y;
-    y := (y - i) / 2;
+    inv (i > 0 -> (x = z && j = n)) && (i <= 0 -> x = z + n*y) && n > 0 && (i = 1 || i = 0);
+
+    while j > 0 {
+        inv x = z + (n - j)*y && n > 0 && i = 1 && j >= 0;
+        x := x+y;
+        j := j - 1;
+    };
+
+    i := i - 1;
+
 };
 
-assert x = y;
+assert x = z + (y * n);

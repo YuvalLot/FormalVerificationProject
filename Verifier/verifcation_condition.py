@@ -19,134 +19,133 @@ ALLOWED_COMMANDS = [
 ]
 
 
-# verify that if pre_cond is true (==1), and code is executed,
-# then post_cond is true
-# if successful, return (0, list[(VC, line)])
-# else, return (1, error_msg)
-def verification_condition(pre_cond: z3.BoolRef, code: ParserNode, 
+"""
+returns a list of conditions so thet {pre_cond}code{post_cond} is valid
+if and only if the returns list is all valid.
+
+returns: list[(z3.BoolRef, int)]
+"""
+def verification_condition(pre_cond: z3.BoolRef, 
+                           code: ParserNode, 
                            post_cond: z3.BoolRef, 
-                           line_number_of_post):
+                           post_line_no: int):
     assert not code.is_expression
+
+    side_eff = []
+    wlp, lineno = weakest_liberal_pre(code, post_cond, {post_line_no}, side_eff)
+    
+    side_eff.append((z3.Implies(pre_cond, wlp), lineno))
+
+    return side_eff
+
+    # print(f"Trying to verify: {{ {pre_cond} }} {code} {{ {post_cond} }}")
+
+"""
+returns (P: z3.BoolRef, derived_from_lines: list[int])
+
+P: the weakest precondition {P} so that {P}code{Q} is valid, 
+   if all of the conditions added to side_effects are valid
+
+derived_from_line: line number that derives P
+
+"""
+def weakest_liberal_pre(code: ParserNode,
+                        post_cond: z3.BoolRef,
+                        post_line_no: set[int],
+                        side_effects: list[(z3.BoolRef, int)]):
+    assert not code.is_expression
+    assert isinstance(post_cond, z3.BoolRef), f"{post_cond}"
+
 
     # print(f"Trying to verify: {{ {pre_cond} }} {code} {{ {post_cond} }}")
 
     if code.name == "assign":
-        
         variable = code.children[0].to_z3_int()
         expression = code.children[1].to_z3_int()
         updated_post = z3.substitute(
             post_cond, 
             (variable, expression)
             )
-
-        # print(f"post_before: {post_cond}, post_after: {updated_post}")
-
-        return [(z3.Implies(
-            pre_cond,
-            updated_post
-        ), line_number_of_post)]
+        return updated_post, post_line_no
     
     if code.name in ["skip", "print"]:
-        return [(z3.Implies(
-            pre_cond,
-            post_cond,
-        ), line_number_of_post)]
+        return post_cond, post_line_no
     
     if code.name == "if":
         if_cond, then_code, else_code = code.children
-        vc_positive = verification_condition(
-            z3.And(pre_cond, if_cond.to_z3_bool()), 
-            then_code, 
-            post_cond, 
-            line_number_of_post
-        )
+        if_cond = if_cond.to_z3_bool()
+        then_wlp, then_lineno = weakest_liberal_pre(then_code, post_cond, post_line_no, side_effects)
+        else_elp, else_lineno = weakest_liberal_pre(else_code, post_cond, post_line_no, side_effects)
+        return z3.Or(z3.And(if_cond, then_wlp), 
+                     z3.And(z3.Not(if_cond), else_elp)), then_lineno.union(else_lineno)
 
-        vc_negative = verification_condition(
-            z3.And(pre_cond, z3.Not(if_cond.to_z3_bool())), 
-            else_code, 
-            post_cond,
-            line_number_of_post
-        ) 
+    """
+    if b then {while b' {inv} } else {code;} 
+    {Q}
+    """
 
-        return vc_positive + vc_negative
+    if code.name == "seq": 
+        current_post = post_cond 
+        current_derived = post_line_no
+        index = len(code.children) - 1
 
-    if code.name == "seq":
-
-        working_condition : z3.BoolRef = pre_cond
-        vc_s = []
-        index = 0
-
-        while index < len(code.children):
+        while index >= 0:
             child = code.children[index]
-            index += 1
-            
-            if child.name == "assert":
-                child = ParserNode("skip", None, [])
-                index -= 1
+            index -= 1
 
-            if child.name in ALLOWED_COMMANDS:
-
-                # collecting the post condition
-                current_post_conditions = []
-                while index < len(code.children) and \
-                      code.children[index].name == "assert":
-                    current_post_conditions.append((
-                          code.children[index].children[0].to_z3_bool(),
-                          code.children[index].value.lineno
-                    ))
-                    index += 1
-
-                if index == len(code.children):
-                    current_post_conditions.append(
-                        (post_cond, line_number_of_post)
-                    )
-
-                for (condition, line_number) in current_post_conditions:
-                    vc_s += verification_condition(
-                        working_condition, 
-                        child, 
-                        condition,
-                        line_number
-                    )
-
-                working_condition = z3.And(
-                    *([pair[0] for pair in current_post_conditions])
-                )
-
-        if len(code.children) == 0:
-            vc_s.append((z3.Implies(pre_cond, post_cond), line_number_of_post))
-
-        return vc_s
+            current_post, current_derived = \
+                weakest_liberal_pre(child, 
+                                    current_post,
+                                    current_derived, 
+                                    side_effects)
+        
+        return current_post, current_derived
 
     if code.name == "assert":
         condition_asserted = code.children[0].to_z3_bool()
-        return [(z3.Implies(pre_cond, condition_asserted), code.value.lineno),
-                (z3.Implies(condition_asserted, post_cond), line_number_of_post)]
+        if post_cond == z3.BoolVal(True):
+            return condition_asserted, {code.value.lineno}
+        return z3.And(post_cond, condition_asserted), post_line_no
+        """
+        TODO: for the future, support two seperate seqrches
+        return condition_asserted, code.lineno
+        return z3.Or(post_cond, z3.Not(condition_asserted)), post_line_no
+        """
     
     if code.name == "assume":
         condition_assumed = code.children[0].to_z3_bool()
-        return [(z3.Implies(condition_assumed, post_cond), line_number_of_post)]
-    
+        return z3.Or(post_cond, z3.Not(condition_assumed)), post_line_no
+
     if code.name == "while":
         while_cond, while_inv, while_body = code.children
-        print(while_cond, while_inv, while_cond)
+        
         if while_inv is None:
-            return [(post_cond, line_number_of_post)]
+            print("WARNING: loop without inv")
+            side_effects.append((post_cond, post_line_no))
+            return z3.BoolVal(True), -1
         
         while_inv_line = while_inv.value.lineno
         while_inv = while_inv.children[0].to_z3_bool()
-        while_cond = while_cond.to_z3_bool()
-        
-        return [(z3.Implies(pre_cond, while_inv), while_inv_line), 
-                (z3.Implies(z3.And(while_inv, z3.Not(while_cond)), post_cond), 
-                 line_number_of_post)
-                ] + \
-                verification_condition(
-                    z3.And(while_inv, while_cond),
-                    while_body,
-                    while_inv, 
-                    while_inv_line
-                )
+        while_cond = while_cond.to_z3_bool()    
+
+        side_effects.append(
+            (z3.Implies(z3.And(while_inv, z3.Not(while_cond)), post_cond), post_line_no),
+        )
+
+        wlp_inv, lines_derived = weakest_liberal_pre(
+            while_body, while_inv, {while_inv_line}, side_effects
+        )
+
+        side_effects.append(
+            (
+                z3.Implies(z3.And(while_cond, while_inv), wlp_inv), 
+                lines_derived
+            )
+        )
+
+        return while_inv, {while_inv_line}
 
     else:
         raise ValueError(f"Error: command {code.name} not yet supported.")
+
+
