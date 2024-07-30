@@ -198,6 +198,18 @@ def parse_command(curr_pos: int, blocks: list):
             seq = ParserNode("seq", block, commands)
             return 0, i, seq
     
+        elif is_token(block, "error"):
+            # we're in an error command
+            # we expect:
+            #  error ; 
+            if i + 1 >= len(blocks) or \
+                 not is_token(blocks[i+1], "semi"):
+                return 1, block, "Illegal Error Structure"
+            
+            commands.append(ParserNode("error", block, []))
+            
+            i += 2
+
         else:
             return 1, block, "Illegal command"
         

@@ -8,7 +8,7 @@ from Parser.command_parser import parse_command
 
 STRUCTURE_TOKENS = [
     "semi", "lcurly", "rcurly", "if", "then", "else", "while",
-    "assign", "skip", "assert", "inv", "print", "assume",
+    "assign", "skip", "assert", "inv", "print", "assume", "error",
 ]
 
 

@@ -1,19 +1,10 @@
-assume i = 1;
-assume j = n;
-assume j > 0;
-assume x = z;
 
-while i > 0 {
-    inv (i > 0 -> (x = z && j = n)) && (i <= 0 -> x = z + n*y) && n > 0 && (i = 1 || i = 0);
+assume x = y;
 
-    while j > 0 {
-        inv x = z + (n - j)*y && n > 0 && i = 1 && j >= 0;
-        x := x+y;
-        j := j - 1;
-    };
-
-    i := i - 1;
-
+if (x != y) then {
+    assert 1 = 2;
+} else {
+    print x;
 };
 
-assert x = z + (y * n);
+assert x = y;

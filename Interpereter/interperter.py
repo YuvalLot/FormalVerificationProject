@@ -6,6 +6,7 @@ from Interpereter.evaluate import evaluate
 """
 POSSIBLE_NODE_NAMES = [
     "op+", "op-", "op*", "op/", "op&&", "op||", "leaf",       # expression types
+    
     "while", "if", "skip", "assign", "assert", "inv", "seq",  # command types
     "print"  
 ]
@@ -82,6 +83,9 @@ def execute(node: ParserNode, env=None):
 
         return 0, None
     
+    elif node.name == "error":
+        return 1, f"Error thrown in line {node.value.lineno}"
+
     elif node.name in ["assert", "inv", "assume"]:
         exp = node.children[0]
         
