@@ -9,6 +9,7 @@ from Parser.command_parser import parse_command
 STRUCTURE_TOKENS = [
     "semi", "lcurly", "rcurly", "if", "then", "else", "while",
     "assign", "skip", "assert", "inv", "print", "assume", "error",
+    "def", "return",
 ]
 
 
@@ -42,7 +43,7 @@ def parse(token_list: list[Token]):
         # for this we use the infix to postfix algorithm 
         failure, expression, msg = parse_expression(block)
         if failure:
-            return 1, f"Error in {expression.lineno}.{expression.charno}: {msg}"
+            return 1, f"Parsing Error in {expression.lineno}.{expression.charno}: {msg}"
         
         blocks[i] = expression
     

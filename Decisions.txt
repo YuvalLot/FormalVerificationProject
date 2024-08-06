@@ -1,0 +1,26 @@
+
+Decisions and Dilemas:
+
+A. I've added tuples, but they are essentially only used for passing 
+   multiple parameters to functions. In the future, we might want to 
+   add more uses, including:
+   
+   1. assignments, e.g.
+      (x, y, z) := (1, 2, 3);
+      logiaclly equivalent to:
+      x := 1; y := 2; z := 3;
+
+   2. returning multiple arguments:
+      return (x, y, z);
+      note that (logically), a function that returns k values is equivalent to k 
+      functions, so this feature shouldn't be that diffucult to verify.
+
+
+B. Verification of functions: for now it functions just like invariances, 
+   the user declares an assert in the start of functions 
+
+C. Types of functions: currently, just concluded from the signature (see also 
+   A.2). Undeclared functions (for verification purposes) also have a concluded 
+   type based on use.
+   We might want the user to declare the types of concrete or helper functions,
+   especially if we want to be able to have multiple returns

@@ -16,7 +16,7 @@ infix_to_function = {
     "op!=": lambda x, y: x != y,
     "op&&": lambda x, y: z3.And(x,y),
     "op||": lambda x, y: z3.Or(x,y),
-    "op->": lambda x, y: z3.Implies(x, y),
+    "op->": lambda x, y: z3.Implies(x, y)
 }
 
 prefix_to_function = {
@@ -135,6 +135,20 @@ class ParserNode:
                     )
                 raise ValueError("Exception: Not supported")
 
+        if self.name == "apply":
+            func_name, func_param = self.children
+            if func_param.name == "comma":
+                func_param = [child.to_z3_inner() for child in func_param.children]
+            else:
+                func_param = [func_param.to_z3_inner()]
+            
+            num_params = len(func_param)
+            infered_func_sig = [z3.IntSort()] * (num_params + 1)
+            func_symbol = z3.Function(func_name.value.value, *infered_func_sig)
+
+            return func_symbol(*func_param)
+
+
     def to_z3_bool(self):
         expression = self.to_z3_inner()
         if not z3.is_bool(expression):
@@ -147,11 +161,14 @@ class ParserNode:
             return expression + 0
         return expression
 
+    # TODO: define a function that prints the value of a parser node 
+    #       as it is written in the while language
+
 
 POSSIBLE_NODE_NAMES = [
     "op+", "op-", "op*", "op/", "op&&", "op||", "op~", "leaf",       # expression types
     "while", "if", "skip", "assign", "assert", "inv", "seq",  # command types
-    "print", "assume"
+    "print", "assume", "error", "def", "return",
 ]
 
 

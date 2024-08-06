@@ -8,7 +8,8 @@ class TokenType:
 
 reserved_words = ["print", "assert", "while", 
                   "if", "then", "else", "inv", 
-                  "skip", "assume", "error"]
+                  "skip", "assume", "error", 
+                  "def", "return"]
 
 valid_token_types = [TokenType(word, word) for word in reserved_words] + [
     
@@ -20,6 +21,7 @@ valid_token_types = [TokenType(word, word) for word in reserved_words] + [
     TokenType("op-", r"\-"),
     TokenType("op*", r"\*"),
     TokenType("op/", r"\/"),
+    TokenType("comma", r'\,'),
 
     
     TokenType("op>=", r"\>\="),
