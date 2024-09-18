@@ -15,12 +15,31 @@ A. I've added tuples, but they are essentially only used for passing
       note that (logically), a function that returns k values is equivalent to k 
       functions, so this feature shouldn't be that diffucult to verify.
 
-
-B. Verification of functions: for now it functions just like invariances, 
-   the user declares an assert in the start of functions 
-
-C. Types of functions: currently, just concluded from the signature (see also 
+B. Types of functions: currently, just concluded from the signature (see also 
    A.2). Undeclared functions (for verification purposes) also have a concluded 
    type based on use.
    We might want the user to declare the types of concrete or helper functions,
    especially if we want to be able to have multiple returns
+
+
+C. I'm thinking about adding the option to ask (in an assertion) if a function 
+   f was called in a line of code:
+   {P} c; {called(f)}
+
+   the Hoare semantics shouldn't be too difficult:
+   1. {P} x := exp {called(f)}              iff  P => called(f) || exp calls f 
+   2. {P} skip; {called(f)}                 iff  P => called(f)
+   3. {P} if b then c1 else c2 {called(f)}  iff  P => called(f) || 
+                                                 {P && b} c1 {called(f)} || 
+                                                 {P && !b} c2 {called(f)}
+   4. {P} while b {inv I; c;} {called(f)}   iff  P => called(f) || 
+                                                 {I && b} c; {called(f)}
+   5. {P} expression {called(f)}            iff  P => called(f) || exp calls f 
+   6. {P} c1; c2; {called(f)}               iff  P => called(f) || 
+                                                 {P} c1; { wlp[c2] (called(f)) }
+
+   for expressions we might need to be more careful since ||, && are lazily evaluated
+   and hence to not call f even if f appears (or we might ignore that)
+   
+   This brings about the following wlp:
+   
