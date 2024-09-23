@@ -1,0 +1,6 @@
+
+FOR VERIFICATION:
+file.txt -> tokenizer -> parser -> pre-processor -> verifier
+
+FOR RUNNING:
+file.txt -> tokenizer -> parser -> interperter

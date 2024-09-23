@@ -21,11 +21,11 @@ if success:
 
 failure, parsed = Parser.parse(tokens)
 
-print(parsed) 
-
 if failure:
     print("Parsing error:", parsed)
     exit()
+
+# print(parsed)
 
 """
 env = Enviornment()

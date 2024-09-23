@@ -1,0 +1,110 @@
+def f(x) {
+  assume x > 0;
+  y := f(x);
+  return y;
+  assert f(x) > 1;
+}
+
+x := 1;
+
+
+z := f(x);
+assert z > 0;
+
+// assert x > 0;
+// z := @temp1
+// assume @temp1 > 1 && @temp1 = f( x ) && @temp2 > 1 && @temp2 = f( x ) && z = @temp1 * @temp2;
+
+assert z > 0;
+
+
+TXT -> Tokenizer -> Parser -> Pre-Porcessing -> Verifier 
+                                            -> 
+
+
+DECISIONS:
+1. one return at end of function 
+2. pre-processing before verifier
+
+
+TODO:
+1. functions
+  a. make sure parser can handle function
+  b. write the pre-processor (translate function calls to temporary variables)
+  c. verify functions 
+    - specifically, add logical functions to the verifier
+
+2. example of verification 
+  a. maybe maybe think of automating some invariants
+
+3. definitions for logical functions
+
+
+// multiply x1 + x2, y
+assume x_o = x1 + x2;
+z := 0;
+
+while x1 > 0 {
+ 
+  z := z + y;
+  x1 := x1 - 1;
+}
+
+
+
+while x2 > 0 {
+  
+  z := z + y;
+  x2 := x2 - 1;
+}
+
+assert z = x _o * y;
+
+
+
+
+
+
+
+
+
+def f(x) {
+  
+  return x + 1;
+  assert RET = x + 1 && RET < f(x - 1)
+
+}
+
+===>
+
+def f(x) {
+  return x + 1;
+  assume @temp1 = f(x - 1) && (@temp1 = (x - 1) + 1 && @temp1 < f((x-1) - 1))
+  assert RET = x + 1 && RET < @temp1
+}
+
+
+
+assert f(1) = 2;
+ 
+==>
+
+assume @temp1 = f(1) && (  @temp1 = 1 )
+assert @temp1 = 2
+
+
+
+
+global_variable := 0;
+
+def add_global(x) {
+  assume 1;
+  return x + global_variable;
+  assert RET = x + global_variable;
+}
+
+global_variable := 3;
+assert add_global(1) = 4;
+
+
+

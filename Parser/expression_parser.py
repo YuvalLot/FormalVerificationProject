@@ -135,7 +135,22 @@ def parse_expression(block: list[Token]):
             last_added = 1
 
         elif tok.name == "rparen":
+
             if last_added == 1:
+                # operator right before a right parantheses is illegal,
+                # unless we have a function application with no parameters
+                # e.g., f () 
+                if op_stack[-1][1] == "LP0":
+                    op_stack.pop()
+                    identifer = node_stack.pop()
+                    if identifer.name != "leaf" and identifer.value.name != "var":
+                        return 1, identifer.value, "illegal function"  
+                    node_stack.append(
+                        ParserNode("apply", identifer.value, [identifer, None], is_expression=True)
+                    )
+                    last_added = 0      
+                    continue
+
                 return 1, tok, "illegal rparen"      
 
             while len(op_stack) > 0 and op_stack[-1][1] not in ["LP0", "LP1"]:
