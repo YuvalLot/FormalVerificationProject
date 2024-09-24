@@ -16,6 +16,7 @@ infix_to_function = {
     "op!=": lambda x, y: x != y,
     "op&&": lambda x, y: z3.And(x,y),
     "op||": lambda x, y: z3.Or(x,y),
+    "op->": lambda x, y: z3.Implies(x, y)
 }
 
 prefix_to_function = {
@@ -39,6 +40,13 @@ class ParserNode:
             self.is_loop_free = False
         if any(child and not child.is_loop_free for child in children):
             self.is_loop_free = False
+
+        self.function_calls = []
+        if self.name == "apply":
+            self.function_calls.append(self.children[0])
+        
+        for child in self.children:
+            self.function_calls.append(child.function_calls)
 
     def __str__(self) -> str:
         if self.name == "leaf":
@@ -126,11 +134,11 @@ class ParserNode:
             else:
                 raise ValueError(f"Unknown leaf type: {self.value.name}.")
             
-        if self.name[:2] == "op":
+        elif self.name[:2] == "op":
 
             if len(self.children) == 1:
                 if self.name in prefix_to_function:
-                    return prefix_to_function[self.name](self.children[0].to_z3_inner_inner())
+                    return prefix_to_function[self.name](self.children[0].to_z3_inner())
                 raise ValueError("Exception: Not supported")
             if len(self.children) == 2:
                 if self.name in infix_to_function:
@@ -139,6 +147,24 @@ class ParserNode:
                         self.children[1].to_z3_inner(),
                     )
                 raise ValueError("Exception: Not supported")
+
+        elif self.name == "apply":
+            func_name, func_param = self.children
+            if func_param is None:
+                func_param = []
+            elif func_param.name == "comma":
+                func_param = [child.to_z3_inner() for child in func_param.children]
+            else:
+                func_param = [func_param.to_z3_inner()]
+            
+            num_params = len(func_param)
+            infered_func_sig = [z3.IntSort()] * (num_params + 1)
+            func_symbol = z3.Function(func_name.value.value, *infered_func_sig)
+
+            return func_symbol(*func_param)
+
+        else:
+            raise ValueError(f'ParserNode.to_z3_inner does not support {self.name}')
 
     def to_z3_bool(self):
         expression = self.to_z3_inner()
@@ -151,12 +177,71 @@ class ParserNode:
         if not z3.is_int(expression):
             return expression + 0
         return expression
+    
+    def to_while_str(self):
+        raw_string = ""
+
+        if self.name == "leaf":
+            return self.value.value
+        
+        elif self.name[:2] == "op":
+            op = self.name[-1]
+
+            if len(self.children) == 1:
+                raw_string = f"({op} {self.children[0].to_while_str()})"
+            else:
+                raw_string = f"({self.children[0].to_while_str()} {op} {self.children[1].to_while_str()})"
+        
+        elif self.name == "apply":
+            func_name, func_param  = self.children
+            func_name = func_name.to_while_str()
+            if func_param is None:
+                func_param = []
+            elif func_param.name == "comma":
+                func_param = [child.to_while_str() for child in func_param.children]
+            else:
+                func_param = [func_param.to_while_str()]
+            
+            return f"{func_name} (" + ",".join(func_param) + ")"
+
+        elif self.name == "while":
+            cond = self.children[0].to_while_str()
+            code = self.children[1].to_while_str()
+            return f"while {cond}" + "{ " + code + " };"
+        
+        elif self.name == "if":
+            cond = self.children[0].to_while_str()
+            then_clasue = self.children[1].to_while_str()
+            else_clause = self.children[2].to_while_str()
+            return f"if ({cond})" + "{" + then_clasue + "}" + \
+                f"else\n" + "{" + else_clause + "}"
+        
+        elif self.name == "skip":
+            return "skip;"
+        
+        elif self.name in ["assert", "inv"]:
+            cond = self.children[0].to_while_str()
+            return + f"{self.name} {cond};"
+        
+        elif self.name == "assign":
+            variable = self.children[0].to_while_str()
+            expression = self.children[1].to_while_str()
+            return  f"{variable} := {expression};"
+        
+        elif self.name == "seq":
+            raw_string = "\n".join(child.to_while_str() for child in self.children)
+        
+        else:
+            return "unknown"
+        
+        return raw_string
 
 
 POSSIBLE_NODE_NAMES = [
-    "op+", "op-", "op*", "op/", "op&&", "op||", "op~", "leaf",       # expression types
+    "op+", "op-", "op*", "op/", "op&&", "op||", "op~", "leaf", "apply",      # expression types
     "while", "if", "skip", "assign", "assert", "inv", "seq",  # command types
-    "print", "assume", "forall"
+
+    "print", "assume", "error", "def", "return", "forall"
 ]
 
 

@@ -1,14 +1,8 @@
 
-x := y;
-assert x = y;
+def f(x) {
+    assume x > 0;
+    return x + 1;
+    assert RET > 1;
+    
+}
 
-while i > 0 {
-    inv x = y;
-    x := x - i;
-    assert x + i = y;
-    y := x + y;
-    assert 2 * x + i = y;
-    y := (y - i) / 2;
-};
-
-assert x = y;

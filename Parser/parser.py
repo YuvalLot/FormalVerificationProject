@@ -5,10 +5,14 @@ from Parser.Tokenizer.tokens import Token
 from Parser.expression_parser import parse_expression
 from Parser.command_parser import parse_command
 
+from Parser.validate_functions import function_applications_legal
+
 
 STRUCTURE_TOKENS = [
     "semi", "lcurly", "rcurly", "if", "then", "else", "while",
-    "assign", "skip", "assert", "inv", "print", "assume", "forall", "::"
+
+    "assign", "skip", "assert", "inv", "print", "assume", "error",
+    "def", "return", "forall", "::"
 ]
 
 
@@ -42,7 +46,7 @@ def parse(token_list: list[Token]):
         # for this we use the infix to postfix algorithm 
         failure, expression, msg = parse_expression(block)
         if failure:
-            return 1, f"Error in {expression.lineno}.{expression.charno}: {msg}"
+            return 1, f"Parsing Error in {expression.lineno}.{expression.charno}: {msg}"
         
         blocks[i] = expression
     
@@ -63,6 +67,13 @@ def parse(token_list: list[Token]):
         else:
             lineno, charno = blocks[end].value.lineno, blocks[end].value.charno
         return 1, f"EOF error in {lineno}.{charno}."
+
+    # now go back and check that all of the expressions are valid
+    valid_funcs = function_applications_legal(command)
+    if valid_funcs is not None:
+        block, msg = valid_funcs
+        print(block.to_while_str())
+        return 1, f"Parsing error in {block.value.lineno}.{block.value.charno}: {msg}"
 
     return 0, command
 

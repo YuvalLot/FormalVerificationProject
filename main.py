@@ -13,6 +13,7 @@ with open(file_name, "r") as file:
     text = file.read()
 
 tokens, success = Tokens.tokenize(text)
+# print(tokens)
 
 if success:
     print(f"Token error: {tokens}")
@@ -20,17 +21,20 @@ if success:
 
 failure, parsed = Parser.parse(tokens)
 
-print(parsed)
-
 if failure:
     print("Parsing error:", parsed)
     exit()
+
+# print(parsed)
 
 """
 env = Enviornment()
 failure, msg = execute(parsed, env)
 if failure:
     print("Execution error:", msg)
+
+print(env.assignments)
+print(env.functions)
 """
 
 verify(parsed)

@@ -7,6 +7,10 @@ class Enviornment:
             for var in env:
                 self.assignments[var] = env[var]
 
+        # self.functions: dictionary from str (name of function) 
+        #                 to ParserNode (body)
+        self.functions = {}
+
     def __getitem__(self, var):
         if var in self.assignments:
             return self.assignments[var]
@@ -23,5 +27,8 @@ class Enviornment:
     
     def __contains__(self, var):
         return var in self.assignments
+
+    def __str__(self) -> str:
+        return f"{self.assignments}\t{self.functions}"
 
 
