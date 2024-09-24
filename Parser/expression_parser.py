@@ -93,6 +93,7 @@ def parse_expression(block: list[Token]):
                 op_stack.append((tok, "I"))
             last_added = 1
 
+
         elif tok.name == "lparen":
             op_stack.append((tok, "LP"))
             last_added = 1

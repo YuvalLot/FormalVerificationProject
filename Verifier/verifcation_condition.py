@@ -15,7 +15,7 @@ POSSIBLE_NODE_NAMES = [
 
 ALLOWED_COMMANDS = [
     "skip", "assign", "seq", "print", "if", "assume",
-    "while"
+    "while", "forall"
 ]
 
 
@@ -147,6 +147,13 @@ def verification_condition(pre_cond: z3.BoolRef, code: ParserNode,
                     while_inv, 
                     while_inv_line
                 )
+    if code.name == "forall":
+        variable = code.children[0].to_z3_int()
+        expression = code.children[1].to_z3_bool()
+    
+        forall_assumption = z3.ForAll([variable], expression)
+    
+        return [(z3.Implies(forall_assumption, post_cond), line_number_of_post)]
 
     else:
         raise ValueError(f"Error: command {code.name} not yet supported.")

@@ -6,7 +6,7 @@ class TokenType:
         self.name = name
 
 
-reserved_words = ["print", "assert", "while", "if", "then", "else", "inv", "skip", "assume"]
+reserved_words = ["print", "assert", "while", "if", "then", "else", "inv", "skip", "assume","forall","::"]
 
 valid_token_types = [TokenType(word, word) for word in reserved_words] + [
     
@@ -36,6 +36,6 @@ valid_token_types = [TokenType(word, word) for word in reserved_words] + [
     TokenType("_ignore", r"[ \n\t]+"),
     TokenType("_comment", r'\#.*'),
     TokenType("var", r"[a-zA-Z_][a-zA-Z0-9_]*"),
-    TokenType("semi", r';')
+    TokenType("semi", r';'),
 
 ]

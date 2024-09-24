@@ -85,6 +85,11 @@ class ParserNode:
             return (tabs * tab_char) + f"{variable} = {expression}\n"
         elif self.name == "seq":
             raw_string = "".join(child.to_python(tabs, tab_char=tab_char) for child in self.children)
+        elif self.name == "forall":
+            variable = self.children[0].to_python(tab_char=tab_char)
+            assertion = self.children[1].to_python(tab_char=tab_char)
+            raw_string = tabs * tab_char + f"all({assertion} for {variable} in domain)"
+    
         else:
             return "unknown"
         return raw_string
@@ -111,6 +116,7 @@ class ParserNode:
     def to_z3_inner(self):
         if not self.is_expression:
             raise ValueError("should not happen")
+
         
         if self.name == "leaf":
             if self.value.name == "int":
@@ -150,7 +156,7 @@ class ParserNode:
 POSSIBLE_NODE_NAMES = [
     "op+", "op-", "op*", "op/", "op&&", "op||", "op~", "leaf",       # expression types
     "while", "if", "skip", "assign", "assert", "inv", "seq",  # command types
-    "print", "assume"
+    "print", "assume", "forall"
 ]
 
 
