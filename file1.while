@@ -1,8 +1,4 @@
 
-def f(x) {
-    assume x > 0;
-    return x + 1;
-    assert RET > 1;
-    
-}
+forall x :: f(x) = 1;
 
+assert f(1) = 1;

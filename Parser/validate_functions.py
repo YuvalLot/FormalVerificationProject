@@ -4,7 +4,7 @@ from Parser.Tokenizer.tokens import Token
 
 
 
-LOGICAL_COMMANDS = ["assert", "assume", "inv"]
+LOGICAL_COMMANDS = ["assert", "assume", "inv", "forall"]
 
 # function that accepts a block, and checks that all function applications 
 # in the block are valid. Note that logical funcions will not be defined, thus they 

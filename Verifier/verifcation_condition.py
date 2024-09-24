@@ -233,12 +233,16 @@ def weakest_liberal_pre(code: ParserNode,
         return [(updated_post, post_line_no)]
 
     if code.name == "forall":
-        variable = code.children[0].to_z3_int()
+        variable = code.children[0]
+        if variable.name == "leaf":
+            variables = [variable.to_z3_int()]
+        else:
+            variables = [v.to_z3_int() for v in variable.children]
         expression = code.children[1].to_z3_bool()
     
-        forall_assumption = z3.ForAll([variable], expression)
+        forall_assumption = z3.ForAll(variables, expression)
     
-        return [(z3.Implies(forall_assumption, post_cond), line_number_of_post)]
+        return [(z3.Implies(forall_assumption, post_cond), post_line_no)]
 
 
     else:

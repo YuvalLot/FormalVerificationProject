@@ -16,6 +16,14 @@ def is_expression(block):
     return True
 
 
+# can appear after a forall
+def is_quantafiable(block):
+    return (block.name == "leaf" and block.value.name == "var") or \
+        (block.name == "comma" and 
+            all(child.name == "leaf" and child.value.name == "var" 
+                for child in block.children))
+
+
 # function that checks if an expression is a valid signature of a funciton
 def valid_signature(block):
     if not is_expression(block) or block.name != "apply" or \
@@ -370,20 +378,18 @@ def parse_command(curr_pos: int, blocks: list,
                            )
             
             i += 2
-
-
         
         elif is_token(block, "forall"):
             # we're in a forall command
             # # we expect:
             # #  forall [variable] :: [assertion] ;
             if i + 4 >= len(blocks) or \
-                not blocks[i + 1].value.name == "var" or \
+                not is_quantafiable(blocks[i + 1]) or \
                 not is_token(blocks[i+2], "::") or \
                 not is_expression(blocks[i+3]) or \
                 not is_token(blocks[i+4], "semi"):
                 return 1, block, "Illegal Forall Structure"
-            variable = blocks[i+1]  # The variable (e.g., x or y)
+            variable = blocks[i+1]  # The variable(s) (e.g., x or y)
             assertion = blocks[i+3]  # The assertion using the variable
 
             # Create the 'forall' ParserNode with the variable and assertion as children

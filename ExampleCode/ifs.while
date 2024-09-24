@@ -1,0 +1,13 @@
+if (num > 0) then {
+    status := 1;  # Set status to 1 if num is positive
+} else {
+    if (num < 0) then {
+        status := -1;  # Set status to -1 if num is negative
+    } else {
+        status := 0;  # Set status to 0 if num is zero
+    };
+};
+
+assert (num > 0 && status = 1) || 
+       (num < 0 && status = -1) || 
+       (num = 0 && status = 0);

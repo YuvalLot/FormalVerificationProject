@@ -218,7 +218,7 @@ def execute(node: ParserNode, env=None):
         
         return 0, None
 
-    elif node.name == "skip":
+    elif node.name in ["skip", "forall"]:
         return 0, None
 
     elif node.name == "assign":
