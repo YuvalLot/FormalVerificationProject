@@ -297,7 +297,7 @@ def parse_command(curr_pos: int, blocks: list,
         elif is_token(block, "rcurly"):
             seq = ParserNode("seq", block, commands)
             return 0, i, seq
-    
+
         elif is_token(block, "error"):
             if seen_return:
                 return 1, block, "Illegal command after return"
@@ -370,6 +370,26 @@ def parse_command(curr_pos: int, blocks: list,
                            )
             
             i += 2
+
+
+        
+        elif is_token(block, "forall"):
+            # we're in a forall command
+            # # we expect:
+            # #  forall [variable] :: [assertion] ;
+            if i + 4 >= len(blocks) or \
+                not blocks[i + 1].value.name == "var" or \
+                not is_token(blocks[i+2], "::") or \
+                not is_expression(blocks[i+3]) or \
+                not is_token(blocks[i+4], "semi"):
+                return 1, block, "Illegal Forall Structure"
+            variable = blocks[i+1]  # The variable (e.g., x or y)
+            assertion = blocks[i+3]  # The assertion using the variable
+
+            # Create the 'forall' ParserNode with the variable and assertion as children
+            commands.append(ParserNode("forall", block, [variable, assertion]))
+
+            i += 5  # Move past the forall structure
 
         else:
             return 1, block, "Illegal command"

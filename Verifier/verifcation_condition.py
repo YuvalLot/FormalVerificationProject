@@ -15,7 +15,7 @@ POSSIBLE_NODE_NAMES = [
 
 ALLOWED_COMMANDS = [
     "skip", "assign", "seq", "print", "if", "assume",
-    "while", "def",
+    "while", "def", "forall"
 ]
 
 INNER_RET_VARIABLE = z3.Int("@RET")
@@ -231,6 +231,15 @@ def weakest_liberal_pre(code: ParserNode,
                                      )
         
         return [(updated_post, post_line_no)]
+
+    if code.name == "forall":
+        variable = code.children[0].to_z3_int()
+        expression = code.children[1].to_z3_bool()
+    
+        forall_assumption = z3.ForAll([variable], expression)
+    
+        return [(z3.Implies(forall_assumption, post_cond), line_number_of_post)]
+
 
     else:
         raise ValueError(f"Error: command {code.name} not yet supported.")

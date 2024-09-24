@@ -10,8 +10,9 @@ from Parser.validate_functions import function_applications_legal
 
 STRUCTURE_TOKENS = [
     "semi", "lcurly", "rcurly", "if", "then", "else", "while",
+
     "assign", "skip", "assert", "inv", "print", "assume", "error",
-    "def", "return",
+    "def", "return", "forall", "::"
 ]
 
 
