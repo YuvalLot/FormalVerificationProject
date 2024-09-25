@@ -5,7 +5,7 @@ from Parser.Tokenizer.tokens import Token
 from Parser.expression_parser import parse_expression
 from Parser.command_parser import parse_command
 
-from Parser.validate_functions import function_applications_legal
+from Parser.validate_functions import functions_legal
 
 
 STRUCTURE_TOKENS = [
@@ -69,7 +69,7 @@ def parse(token_list: list[Token]):
         return 1, f"EOF error in {lineno}.{charno}."
 
     # now go back and check that all of the expressions are valid
-    valid_funcs = function_applications_legal(command)
+    valid_funcs = functions_legal(command)
     if valid_funcs is not None:
         block, msg = valid_funcs
         print(block.to_while_str())

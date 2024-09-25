@@ -122,6 +122,9 @@ def parse_command(curr_pos: int, blocks: list,
 
             commands.append(ParserNode("while", block, [while_cond, invariance, while_command]))
             
+            if while_command.contains_return:
+                return 1, while_cond.contains_return, "return should only appear once at the end of function"
+
             i += 2
             
         elif is_token(block, "if"):
@@ -166,6 +169,11 @@ def parse_command(curr_pos: int, blocks: list,
 
             commands.append(ParserNode("if", block, [if_cond, then_command, else_command]))
             
+            # TODO: allow return to appear in then clause and else clause
+            if then_command.contains_return or else_command.contains_return:
+                return (1, then_command.contains_return or else_command.contains_return, 
+                        "Return should only appear once at the end of the function")
+
             i += 2
 
         elif is_token(block, "skip"):

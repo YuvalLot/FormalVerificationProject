@@ -272,16 +272,14 @@ def execute(node: ParserNode, env=None):
         return 0, None
 
     elif node.name == "seq":
+        returned = None
+        
         for child in node.children:
             fail, returned = execute(child, env)
             if fail:
                 return fail, returned
-            # if 
-            if returned != None:
-                # this means we had a return statement
-                return fail, returned
         
-        return 0, None
+        return 0, returned
 
     elif node.name == "return":
         ret_expression = node.children[0]

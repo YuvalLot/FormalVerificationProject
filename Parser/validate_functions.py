@@ -13,9 +13,10 @@ LOGICAL_COMMANDS = ["assert", "assume", "inv", "forall"]
 # function is illegal to use.
 # return None if there is no problem, 
 # else the block with the problem and a string expressing the problem
-def function_applications_legal(block: ParserNode, 
-                                parsing_environment: dict[str, int] = None, 
-                                allow_logical: bool = False):
+def functions_legal(block: ParserNode, 
+                    parsing_environment: dict[str, int] = None, 
+                    allow_logical: bool = False, ):
+    
     if block is None:
         return
     
@@ -72,20 +73,20 @@ def function_applications_legal(block: ParserNode,
         parsing_environment[func_name.value.value] = -1
         
         # verify the pre and post
-        validity = function_applications_legal(func_pre, parsing_environment.copy(), True) 
+        validity = functions_legal(func_pre, parsing_environment.copy(), True) 
         if validity != None:
             return validity
         
-        validity = function_applications_legal(func_post, parsing_environment.copy(), True) 
+        validity = functions_legal(func_post, parsing_environment.copy(), True) 
         if validity != None:
             return validity
 
         parsing_environment[func_name.value.value] = old 
-        return function_applications_legal(func_code, parsing_environment.copy(), allow_logical)
+        return functions_legal(func_code, parsing_environment.copy(), allow_logical)
 
     allow_logical = allow_logical or block.name in LOGICAL_COMMANDS
     for child in block.children:
-        validity = function_applications_legal(child, parsing_environment.copy(), allow_logical) 
+        validity = functions_legal(child, parsing_environment.copy(), allow_logical) 
         if validity != None:
             return validity
 

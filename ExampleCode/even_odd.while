@@ -1,0 +1,40 @@
+
+def even (x) {
+    assume x >= 0;
+
+    if (x = 0) then {
+        flag := 1;
+    }
+    else {
+        # flag = odd(x - 1);
+
+        assert x - 1 >= 0;
+        assume temp1 = (x-1) % 2 && temp1 = odd(x-1);
+        flag := temp1;
+    };
+
+    return flag;
+
+    assert RET = 1 - x % 2;
+};
+
+
+def odd (x) {
+    assume x >= 0;
+
+    if (x = 0) then {
+        flag := 0;
+    }
+    else {
+        # flag = even (x - 1);
+
+        assert x - 1 >= 0;
+        assume temp2 = 1 - (x-1) % 2 && temp2 = even(x-1);
+        flag := temp2;
+    };
+
+    return flag;
+
+    assert RET = x % 2;
+
+};

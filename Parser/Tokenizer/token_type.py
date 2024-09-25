@@ -23,6 +23,7 @@ valid_token_types = [TokenType(word, word) for word in reserved_words] + [
     TokenType("op-", r"\-"),
     TokenType("op*", r"\*"),
     TokenType("op/", r"\/"),
+    TokenType("op%", r"\%"),
     TokenType("comma", r'\,'),
 
     

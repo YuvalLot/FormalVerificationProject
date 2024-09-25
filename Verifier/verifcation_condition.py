@@ -5,7 +5,8 @@ import z3
 """
 POSSIBLE_NODE_NAMES = [
     "op+", "op-", "op*", "op/", "op&&", "op||", "op~", "leaf",       # expression types
-    
+    "op%",
+
     "skip", "assign",  # command types
     "print"
 
@@ -58,6 +59,7 @@ def weakest_liberal_pre(code: ParserNode,
                         post_line_no: set[int],
                         side_effects: list[(z3.BoolRef, int)]):
     
+    print(code)
     assert not code.is_expression
     assert isinstance(post_cond, z3.BoolRef), f"{post_cond}"
 

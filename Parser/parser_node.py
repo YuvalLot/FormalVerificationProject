@@ -2,11 +2,13 @@
 from Parser.Tokenizer.tokens import Token
 import z3
 
+LOGICAL_COMMANDS = ["assert", "assume", "inv", "forall"]
 
 infix_to_function = {
     "op+": lambda x, y: x + y,
     "op-": lambda x, y: x - y,
     "op*": lambda x, y: x * y,
+    "op%": lambda x, y: x % y,
     "op/": lambda x, y: x / y,
     "op>": lambda x, y: x>y,
     "op<": lambda x, y : x<y,
@@ -41,12 +43,32 @@ class ParserNode:
         if any(child and not child.is_loop_free for child in children):
             self.is_loop_free = False
 
+        # all functions called in this 
         self.function_calls = []
         if self.name == "apply":
             self.function_calls.append(self.children[0])
         
         for child in self.children:
-            self.function_calls.append(child.function_calls)
+            self.function_calls += child.function_calls
+
+        # free variables in this parser node
+        self.free_variables = []
+        if self.name == "leaf":
+            self.free_variables.append(self.value.value)
+        else:
+            for child in self.children:
+                self.free_variables += child.free_variables
+
+        # contains_return
+        self.contains_return = None
+        if self.name == "return":
+            self.contains_return = self
+        else:
+            for child in children:
+                if child.contains_return:
+                    self.contains_return = child.contains_return
+                    break
+
 
     def __str__(self) -> str:
         if self.name == "leaf":
