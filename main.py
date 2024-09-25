@@ -6,6 +6,8 @@ from Interpereter.enviornment import Enviornment
 import sys
 
 from Verifier.verify import verify
+from Verifier.PreVeriferProcessing.preprocessor import preprocess
+
 
 
 file_name = "file1.while" if (len(sys.argv) == 1) else sys.argv[1]

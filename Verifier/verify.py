@@ -1,12 +1,22 @@
 
 from Parser.parser import ParserNode
 from Verifier.verifcation_condition import verification_condition
+from Verifier.PreVeriferProcessing.preprocessor import preprocess
 
 import z3
 
 
 # returns object of type Verification
 def verify(code: ParserNode):
+
+    # preprocess
+
+    try:
+        code = ParserNode("seq", code.value, preprocess(code))
+    except RecursionError:
+        print("There was a recursion error in translating the functions")
+        return
+
     vc = verification_condition(z3.BoolVal(True), code, z3.BoolVal(True), -1)
 
     for (condition, line_number) in vc:

@@ -40,7 +40,8 @@ def valid_signature(block):
         (func_par.name == "leaf" and func_par.value.name == "var") or \
         (func_par.name == "comma" and 
             all(child.name == "leaf" and child.value.name == "var" 
-                for child in func_par.children))
+                for child in func_par.children) and 
+            len(set(child.value.value for child in func_par.children)) == len(func_par.children))
     
     return param_valid
 

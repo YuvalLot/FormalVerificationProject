@@ -49,15 +49,19 @@ class ParserNode:
             self.function_calls.append(self.children[0])
         
         for child in self.children:
-            self.function_calls += child.function_calls
+            if child is not None:
+                self.function_calls += child.function_calls
 
         # free variables in this parser node
-        self.free_variables = []
-        if self.name == "leaf":
-            self.free_variables.append(self.value.value)
+        self.free_variables = set()
+        if self.name == "leaf" and self.value.name == "var":
+            self.free_variables.add(self.value.value)
+        elif self.name == "apply":
+            self.free_variables.update(self.children[1].free_variables)
         else:
             for child in self.children:
-                self.free_variables += child.free_variables
+                if child is not None:
+                    self.free_variables.update(child.free_variables)
 
         # contains_return
         self.contains_return = None
@@ -65,10 +69,9 @@ class ParserNode:
             self.contains_return = self
         else:
             for child in children:
-                if child.contains_return:
+                if child is not None and child.contains_return:
                     self.contains_return = child.contains_return
                     break
-
 
     def __str__(self) -> str:
         if self.name == "leaf":
@@ -134,17 +137,34 @@ class ParserNode:
             else:
                 return self
             
-        if self.name[:2] == "op":
+        elif self.name[:2] == "op":
             return ParserNode(
                 self.name, self.value, 
                 [child.substitute(dictionary) for child in self.children],
                 is_expression=self.is_expression
             )
         
-        raise Exception("Not suppoerted (yet...)")
+        elif self.name == "apply":
+            func_name, func_param = self.children
+            if func_param is None:
+                func_param = None
+            elif func_param.name == "comma":
+                func_param = ParserNode("comma", func_param.value,
+                    [child.substitute(dictionary) for child in func_param.children], 
+                    is_expression=func_param.is_expression)
+            else:
+                func_param = func_param.substitute(dictionary)
+            
+
+            return ParserNode(
+                self.name, self.value, [func_name, func_param], is_expression=True
+            )
+        
+        raise Exception(f"Not suppoerted (yet...): {self.name}")
 
     def to_z3_inner(self):
         if not self.is_expression:
+            print(self)
             raise ValueError("should not happen")
 
         
@@ -200,19 +220,19 @@ class ParserNode:
             return expression + 0
         return expression
     
-    def to_while_str(self):
-        raw_string = ""
+    def to_while_str(self, tabs=""):
+        raw_string = tabs
 
         if self.name == "leaf":
-            return self.value.value
+            raw_string += self.value.value
         
         elif self.name[:2] == "op":
-            op = self.name[-1]
+            op = self.name[2:]
 
             if len(self.children) == 1:
-                raw_string = f"({op} {self.children[0].to_while_str()})"
+                raw_string += f"({op} {self.children[0].to_while_str()})"
             else:
-                raw_string = f"({self.children[0].to_while_str()} {op} {self.children[1].to_while_str()})"
+                raw_string += f"({self.children[0].to_while_str()} {op} {self.children[1].to_while_str()})"
         
         elif self.name == "apply":
             func_name, func_param  = self.children
@@ -224,35 +244,52 @@ class ParserNode:
             else:
                 func_param = [func_param.to_while_str()]
             
-            return f"{func_name} (" + ",".join(func_param) + ")"
+            raw_string += f"{func_name} (" + ",".join(func_param) + ")"
 
         elif self.name == "while":
             cond = self.children[0].to_while_str()
-            code = self.children[1].to_while_str()
-            return f"while {cond}" + "{ " + code + " };"
+            code = self.children[1].to_while_str(tabs + "\t")
+            raw_string += f"while {cond}" + "{ " + code + tabs + "};"
         
         elif self.name == "if":
             cond = self.children[0].to_while_str()
-            then_clasue = self.children[1].to_while_str()
-            else_clause = self.children[2].to_while_str()
-            return f"if ({cond})" + "{" + then_clasue + "}" + \
-                f"else\n" + "{" + else_clause + "}"
+            then_clasue = self.children[1].to_while_str(tabs + "\t")
+            else_clause = self.children[2].to_while_str(tabs + "\t")
+            raw_string += f"if ({cond})" + "{\n" + then_clasue + "\n" + tabs + \
+                "} else {\n" + else_clause + "\n" + tabs + "}"
         
         elif self.name == "skip":
-            return "skip;"
+            raw_string += "skip;"
         
-        elif self.name in ["assert", "inv"]:
+        elif self.name in ["assert", "inv", "assume", "return"]:
             cond = self.children[0].to_while_str()
-            return + f"{self.name} {cond};"
+            raw_string += f"{self.name} {cond};"
         
         elif self.name == "assign":
             variable = self.children[0].to_while_str()
             expression = self.children[1].to_while_str()
-            return  f"{variable} := {expression};"
+            raw_string += f"{variable} := {expression};"
         
         elif self.name == "seq":
-            raw_string = "\n".join(child.to_while_str() for child in self.children)
+            raw_string = "\n".join(child.to_while_str(tabs) for child in self.children)
         
+        elif self.name == "def":
+            func_name, func_param, func_pre, func_code, func_post = self.children
+            raw_string += f"def {func_name}({func_param.to_while_str()})" + "{\n" 
+            if func_pre is not None:
+                raw_string += func_pre.to_while_str(tabs + "\t") + "\n" 
+            
+            raw_string += func_code.to_while_str(tabs + "\t") + "\n" 
+        
+            if func_post is not None:
+                raw_string += func_post.to_while_str(tabs + "\t") + "\n"
+            
+            raw_string += tabs + "};"
+
+        elif self.name == "comma":
+            raw_string = ",".join(child.to_while_str() for child in self.children)
+            raw_string = tabs + "(" + raw_string + ")"
+
         else:
             return "unknown"
         
