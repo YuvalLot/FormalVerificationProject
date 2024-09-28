@@ -4,6 +4,12 @@ import z3
 
 LOGICAL_COMMANDS = ["assert", "assume", "inv", "forall"]
 
+TO_BOOL = lambda x: x if z3.is_bool(x) else x != 0
+
+INNER_RET_NAME = "@RET"
+
+
+
 infix_to_function = {
     "op+": lambda x, y: x + y,
     "op-": lambda x, y: x - y,
@@ -16,15 +22,16 @@ infix_to_function = {
     "op>=": lambda x, y: x>=y,
     "op=": lambda x, y: x==y,
     "op!=": lambda x, y: x != y,
-    "op&&": lambda x, y: z3.And(x,y),
-    "op||": lambda x, y: z3.Or(x,y),
-    "op->": lambda x, y: z3.Implies(x, y)
+    "op&&": lambda x, y: z3.And(TO_BOOL(x),TO_BOOL(y)),
+    "op||": lambda x, y: z3.Or(TO_BOOL(x),TO_BOOL(y)),
+    "op->": lambda x, y: z3.Implies(TO_BOOL(x),TO_BOOL(y)),
+    "op<->": lambda x, y: TO_BOOL(x) == TO_BOOL(y),
 }
 
 prefix_to_function = {
     "op+": lambda x: x,
     "op-": lambda x: - x,
-    "op!": lambda x: z3.Not(x) if z3.is_bool(x) else z3.Not(x != 0),
+    "op!": lambda x: z3.Not(TO_BOOL(x))
 }
 
 

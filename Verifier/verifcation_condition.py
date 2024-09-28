@@ -19,7 +19,7 @@ ALLOWED_COMMANDS = [
     "while", "def", "forall"
 ]
 
-INNER_RET_VARIABLE = z3.Int("@RET")
+INNER_RET_VARIABLE = z3.Int("RET")
 
 
 """
@@ -201,26 +201,13 @@ def weakest_liberal_pre(code: ParserNode,
         To verify a function definition, we add side effect(s) that verify the function's
         pre-condition implies the wlp of the function's post-condition
         """
-        func_name, func_params, func_pre, func_code, func_post = code.children
-
-        if func_pre is None:
-            func_pre = z3.BoolVal(True)
-        else:
-            func_pre = func_pre.children[0].to_z3_bool()
-
-        if func_post is None:
-            func_post = z3.BoolVal(True)
-        else:
-            func_post = func_post.children[0].to_z3_bool()
+        _, _, _, func_code, _ = code.children
 
 
         # add the side effects
-        side_effects += verification_condition(func_pre, 
+        side_effects += verification_condition(z3.BoolVal(True), 
                                                func_code, 
-                                               z3.substitute(
-                                                   func_post,
-                                                   (z3.Int("RET"), INNER_RET_VARIABLE)
-                                               ), 
+                                               z3.BoolVal(True), 
                                                code.value.lineno)
 
         # other than the side effects, function definition essentially acts as a skip;

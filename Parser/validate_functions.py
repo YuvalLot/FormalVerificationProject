@@ -3,6 +3,7 @@ from Parser.parser_node import ParserNode
 from Parser.Tokenizer.tokens import Token
 
 
+RET_NAME = "RET"
 
 LOGICAL_COMMANDS = ["assert", "assume", "inv", "forall"]
 
@@ -15,10 +16,14 @@ LOGICAL_COMMANDS = ["assert", "assume", "inv", "forall"]
 # else the block with the problem and a string expressing the problem
 def functions_legal(block: ParserNode, 
                     parsing_environment: dict[str, int] = None, 
-                    allow_logical: bool = False, ):
+                    allow_logical: bool = False, 
+                    allow_RET: bool = False):
     
     if block is None:
         return
+    
+    if not allow_RET and block.name == "leaf" and block.value.value == "RET":
+        return block, "RET is only allowed at the final assertion in a function"
     
     if parsing_environment is None:
         parsing_environment = {}
@@ -87,7 +92,7 @@ def functions_legal(block: ParserNode,
         if func_pre is not None and not func_pre.free_variables.issubset(set_func_parms):
             return func_pre, "Pre condition should only contain parameters"
         
-        validity = functions_legal(func_post, parsing_environment.copy(), True) 
+        validity = functions_legal(func_post, parsing_environment.copy(), True, allow_RET=True) 
         if validity != None:
             return validity
 
@@ -99,7 +104,7 @@ def functions_legal(block: ParserNode,
 
     allow_logical = allow_logical or block.name in LOGICAL_COMMANDS
     for child in block.children:
-        validity = functions_legal(child, parsing_environment.copy(), allow_logical) 
+        validity = functions_legal(child, parsing_environment.copy(), allow_logical, allow_RET) 
         if validity != None:
             return validity
 

@@ -3,16 +3,13 @@ from Parser.parser_node import ParserNode
 from Parser.Tokenizer.tokens import Token
 
 
-
 def is_token(block, name: str):
     return type(block) == Token and block.name == name
 
 def is_expression(block):
     if type(block) != ParserNode or not block.is_expression:
         return False
-    
-    # now we check that each function application inside of block is legal
-    
+
     return True
 
 

@@ -20,6 +20,7 @@ valid_token_types = [TokenType(word, word) for word in reserved_words] + [
     TokenType("int", r"[0-9]+"),
     TokenType("op+", r"\+"),
     TokenType("op->", r'\-\>'),
+    TokenType("op<->", r'\<\-\>'),
     TokenType("op-", r"\-"),
     TokenType("op*", r"\*"),
     TokenType("op/", r"\/"),

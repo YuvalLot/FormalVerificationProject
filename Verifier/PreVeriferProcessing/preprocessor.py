@@ -2,7 +2,6 @@
 from Parser.parser_node import ParserNode
 from Verifier.PreVeriferProcessing.expression_trans import expression_trans
 
-
 """
 PREPROCESSOR:
 
@@ -21,7 +20,7 @@ def preprocess(code: ParserNode, functions = None):
                 functions[command.children[0].value.value] = command
 
         for command in commands:
-            new_commands += preprocess(command, functions)
+            new_commands += preprocess(command, functions.copy())
 
         return new_commands
 
@@ -44,8 +43,8 @@ def preprocess(code: ParserNode, functions = None):
         if_cond, then_code, else_code = code.children
 
         (logics_cond, new_cond) = expression_trans(if_cond, functions)
-        new_then_codes = preprocess(then_code, functions)
-        new_else_codes = preprocess(else_code, functions)
+        new_then_codes = preprocess(then_code, functions.copy())
+        new_else_codes = preprocess(else_code, functions.copy())
 
         return logics_cond + [
             ParserNode("if", code.value, 
@@ -75,12 +74,17 @@ def preprocess(code: ParserNode, functions = None):
         """
         func_name, func_params, func_pre, func_code, func_post = code.children
 
-        new_codes = preprocess(func_code, functions)
+        new_codes = []
+        if func_pre is not None:
+            new_codes += preprocess(func_pre, functions.copy())
+        new_codes += preprocess(func_code, functions.copy())
+        if func_post is not None:
+            new_codes += preprocess(func_post, functions.copy())
 
         return [ParserNode("def", code.value, [
-            func_name, func_params, func_pre, 
+            func_name, func_params, None, 
             ParserNode("seq", func_code.value, new_codes), 
-            func_post
+            None
         ])]
 
     elif code.name == "forall":

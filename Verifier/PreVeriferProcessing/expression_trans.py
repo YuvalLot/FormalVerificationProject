@@ -3,6 +3,7 @@ from Parser.parser_node import ParserNode
 from Parser.Tokenizer.tokens import Token
 
 INT_VARIABLE_COUNT = 0
+INT_VARIABLE_CORRESPONDENCE = {}
 
 # for success, return a triplet of items:
 # (
@@ -92,6 +93,7 @@ def expression_trans(expression: ParserNode, functions: dict[str, ParserNode]):
                                                          expression.value.lineno, 
                                                          expression.value.charno), [], 
                                                          is_expression = True)
+            INT_VARIABLE_CORRESPONDENCE[f"@{INT_VARIABLE_COUNT}"] = expression
             INT_VARIABLE_COUNT += 1
 
             if func_pre is not None:
