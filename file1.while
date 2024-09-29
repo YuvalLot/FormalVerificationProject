@@ -1,83 +1,12 @@
 
-/*
-In the festive spirit of Christmas morning, four kids from neighboring 
-families each unwrap a unique present in their differently colored houses. 
-With names and surnames as varied as the gifts themselves, this Zebra Puzzle 
-challenges you to untangle the clues and match every child with their house 
-color, full name, and the special gift they received.
-
-Colors: Blue, Green , Pink , White 
-Names: Ian , Patrick , Ulysses , Wyatt 
-Surname: Jackson , King , Quinn , Young 
-Gifts: Jigsaw , Robot , Science Kit , Skateboard 
-*/
-
-def range(x) {
-    if (1 <= x && x <= 4) then {
-        ret := 1;
-    } else {
-        ret := 0;
-    };
-    return ret;
-    assert RET <-> (1 <= x && x <= 4);
+def id(x) {
+    return x;
+    assert RET = x;
 };
 
-def range4(a, b, c, d) {
-    return range(a) && range(b) && range(c) && range(d);
-    assert RET <-> (range(a) && range(b) && range(c) && range(d));
+x := 0;
+while (id(x) < id(10)) {
+    inv id(x) <= id(id(10) - 1) + 1;
+    x := x + 1;
 };
-
-def unique(a, b, c, d) {
-    if (a = b || a = c || a = d || b = c || b = d || c = d) then {
-        ret := 0;
-    } else {
-        ret := 1;
-    };
-    return ret;
-    assert RET <-> ! (a = b || a = c || a = d || b = c || b = d || c = d);
-};
-
-assume range4(Blue, Green, Pink, White);
-assume range4(Ian , Patrick , Ulysses , Wyatt );
-assume range4(Jackson , King , Quinn , Young);
-assume range4(Jigsaw , Robot , Science , Skateboard );
-
-assume unique(Blue, Green, Pink, White);
-assume unique(Ian , Patrick , Ulysses , Wyatt );
-assume unique(Jackson , King , Quinn , Young);
-assume unique(Jigsaw , Robot , Science , Skateboard );
-
-# The boy who got a Skateboard lives in the second house.
-Skateboard := 2;
-
-# The kid with the surname Young lives at the first house.
-Young := 1;
-
-# The boy who received a Jigsaw puzzle lives at one of the ends.
-assume Jigsaw = 1 || Jigsaw = 4;
-
-# The kid living in the White house is next to the one who got a Jigsaw puzzle.
-assume White - Jigsaw = 1 || White - Jigsaw = -1;
-
-# Ulysses lives directly to the left of Wyatt.
-assume Ulysses - Wyatt = -1;
-
-# The King family lives at one of the ends.
-assume King = 1 || King = 4;
-
-# The Young boy got a Science kit for Christmas.
-assume Young = Science;
-
-# The White house is immediately to the right of the Blue house.
-assume White - Blue = 1;
-
-# Patrick lives in the third house.
-assume Patrick = 3;
-
-# The kid who received a Robot is next to the one living in the Pink house.
-assume Robot - Pink = 1 || Robot - Pink = -1;
-
-# The Quinn kid got a Skateboard for Christmas.
-assume Quinn = Skateboard;
-
-assert 0;
+assert x = 10;

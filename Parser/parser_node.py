@@ -255,8 +255,9 @@ class ParserNode:
 
         elif self.name == "while":
             cond = self.children[0].to_while_str()
-            code = self.children[1].to_while_str(tabs + "\t")
-            raw_string += f"while {cond}" + "{ " + code + tabs + "};"
+            inv = self.children[1].to_while_str(tabs + "\t")
+            code = self.children[2].to_while_str(tabs + "\t")
+            raw_string += f"while {cond}" + "{\n" + inv + "\n" + code + "\n" + tabs + "};"
         
         elif self.name == "if":
             cond = self.children[0].to_while_str()

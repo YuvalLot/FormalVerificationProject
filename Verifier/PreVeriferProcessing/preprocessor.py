@@ -62,7 +62,19 @@ def preprocess(code: ParserNode, functions = None):
     elif code.name == "while":
         while_cond, while_inv, while_body = code.children
         
-        raise Exception("PILE: WHILE's MILE AWAY FROM FILE KYLE!")
+        while_cond_logics, while_cond_new = expression_trans(while_cond, functions)
+        while_inv_logics, while_inv_new = expression_trans(while_inv.children[0], functions)
+        while_body_new = preprocess(while_body, functions.copy())
+
+        return while_cond_logics + while_inv_logics + [
+            ParserNode("while", code.value, [
+                while_cond_new, 
+                ParserNode("inv", while_inv.value, [while_inv_new]),
+                ParserNode("seq", while_body.value, while_body_new + 
+                                                    while_cond_logics + 
+                                                    while_inv_logics)
+            ])
+        ] + while_cond_logics + while_inv_logics
 
     elif code.name == "error":
         return [code]

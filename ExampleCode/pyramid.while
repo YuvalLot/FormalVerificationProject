@@ -1,3 +1,5 @@
+
+# recursive approach:
 def f(x) {
     assume x >= 0;
     ret := 0;
@@ -5,13 +7,22 @@ def f(x) {
         skip;
     } else {
         ret := x + f(x - 1);
-        
-        /*
-        assert x - 1 >= 0;
-        assume @temp1 = (x-1) * ((x-1) + 1) / 2;
-        ret := x + @temp1;
-        */
     };
     return ret;
     assert RET = x * (x + 1) / 2;
+};
+
+
+# sequential approach 
+def g(x) {
+    assume x >= 0;
+    sum := 0;
+    i := 0;
+    while (i != x + 1) {
+        inv sum = ((i - 1) * i) / 2;
+        sum := sum + i;
+        i := i + 1;
+    };
+    return sum;
+    assert RET = (x * (x + 1)) / 2;
 };

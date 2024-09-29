@@ -18,6 +18,7 @@ def expression_trans(expression: ParserNode, functions: dict[str, ParserNode]):
     global INT_VARIABLE_COUNT
 
     if not expression.is_expression:
+        print(expression)
         raise Exception("EXCEPTION: EXPRESSION IS NOT EXPRESSION, SHOULD NOT HAPPEND!")
     
 
