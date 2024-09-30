@@ -61,7 +61,7 @@ def weakest_liberal_pre(code: ParserNode,
     
     # print(code)
     # TODO: change post_line_no to be a set[Token]
-    assert not code.is_expression
+    
     assert isinstance(post_cond, z3.BoolRef), f"{post_cond}"
 
     # print(f"Trying to verify: {{ {pre_cond} }} {code} {{ {post_cond} }}")
@@ -75,7 +75,7 @@ def weakest_liberal_pre(code: ParserNode,
             )
         return [ (updated_post, post_line_no) ]
     
-    if code.name in ["skip", "print"]:
+    if code.name in ["skip", "print"] or code.is_expression:
         return [(post_cond, post_line_no)]
     
     if code.name == "if":

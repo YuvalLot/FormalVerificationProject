@@ -1,12 +1,7 @@
 
-def id(x) {
-    return x;
-    assert RET = x;
+
+def f(x) {
+    
 };
 
-x := 0;
-while (id(x) < id(10)) {
-    inv id(x) <= id(id(10) - 1) + 1;
-    x := x + 1;
-};
-assert x = 10;
+x := f(1);

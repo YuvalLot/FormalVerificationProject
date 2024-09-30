@@ -72,7 +72,6 @@ def parse(token_list: list[Token]):
     valid_funcs = functions_legal(command)
     if valid_funcs is not None:
         block, msg = valid_funcs
-        print(block.to_while_str())
         return 1, f"Parsing error in {block.value.lineno}.{block.value.charno}: {msg}"
 
     return 0, command

@@ -17,7 +17,12 @@ LOGICAL_COMMANDS = ["assert", "assume", "inv", "forall"]
 def functions_legal(block: ParserNode, 
                     parsing_environment: dict[str, int] = None, 
                     allow_logical: bool = False, 
-                    allow_RET: bool = False):
+                    allow_RET: bool = False, 
+                    illegal_variables = None):
+
+
+    if illegal_variables is None:
+        illegal_variables = set()
     
     if block is None:
         return
@@ -56,6 +61,8 @@ def functions_legal(block: ParserNode,
     elif block.name == "seq":
         # in this case we need to first scan all children to gather 
         # all function definitions, and then continue
+        parsing_environment = parsing_environment.copy()
+        
         for child in block.children:
             if child.name == "def":
                 func_name = child.children[0].value.value
@@ -85,14 +92,14 @@ def functions_legal(block: ParserNode,
             )
 
         # verify the pre and post
-        validity = functions_legal(func_pre, parsing_environment.copy(), True) 
+        validity = functions_legal(func_pre, parsing_environment, True, illegal_variables) 
         if validity != None:
             return validity
 
         if func_pre is not None and not func_pre.free_variables.issubset(set_func_parms):
             return func_pre, "Pre condition should only contain parameters"
         
-        validity = functions_legal(func_post, parsing_environment.copy(), True, allow_RET=True) 
+        validity = functions_legal(func_post, parsing_environment, True, allow_RET=True, illegal_variables=illegal_variables) 
         if validity != None:
             return validity
 
@@ -100,11 +107,16 @@ def functions_legal(block: ParserNode,
         if func_post is not None and not func_post.free_variables.issubset(set_func_parms):
             return func_post, "Post condition should only contain parameters and RET"
 
-        return functions_legal(func_code, parsing_environment.copy(), allow_logical)
+        return functions_legal(func_code, parsing_environment, allow_logical, illegal_variables=illegal_variables.union(set_func_parms))
+
+    elif block.name == "assign":
+        assigned_var, _ = block.children
+        if assigned_var.value.value in illegal_variables:
+            return block, f"cannot assign values to parameter {assigned_var.value.value}"
 
     allow_logical = allow_logical or block.name in LOGICAL_COMMANDS
     for child in block.children:
-        validity = functions_legal(child, parsing_environment.copy(), allow_logical, allow_RET) 
+        validity = functions_legal(child, parsing_environment.copy(), allow_logical, allow_RET, illegal_variables) 
         if validity != None:
             return validity
 

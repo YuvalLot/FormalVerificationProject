@@ -122,6 +122,13 @@ def expression_trans(expression: ParserNode, functions: dict[str, ParserNode]):
                                     is_expression = True)
                         ])
                 )
+            else:
+                logics.append(
+                    ParserNode("assume", func_name.value, [ 
+                                ParserNode("op=", func_name.value, 
+                                [ParserNode("apply", expression.value, [func_name, new_params_parser_node], is_expression = True), dictionary["RET"]], is_expression = True)]
+                        )
+                )
 
 
             return (logics, dictionary["RET"])
