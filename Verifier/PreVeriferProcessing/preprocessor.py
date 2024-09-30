@@ -63,13 +63,18 @@ def preprocess(code: ParserNode, functions = None):
         while_cond, while_inv, while_body = code.children
         
         while_cond_logics, while_cond_new = expression_trans(while_cond, functions)
-        while_inv_logics, while_inv_new = expression_trans(while_inv.children[0], functions)
+        if while_inv is not None:
+            while_inv_logics, while_inv_new = expression_trans(while_inv.children[0], functions)
+        else:
+            while_inv_logics = []
+            while_inv_new = None
         while_body_new = preprocess(while_body, functions.copy())
 
         return while_cond_logics + while_inv_logics + [
             ParserNode("while", code.value, [
                 while_cond_new, 
-                ParserNode("inv", while_inv.value, [while_inv_new]),
+                ParserNode("inv", while_inv.value, [while_inv_new]) 
+                if while_inv is not None else None,
                 ParserNode("seq", while_body.value, while_body_new + 
                                                     while_cond_logics + 
                                                     while_inv_logics)

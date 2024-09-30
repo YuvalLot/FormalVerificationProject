@@ -80,6 +80,16 @@ class ParserNode:
                     self.contains_return = child.contains_return
                     break
 
+        
+        # changing variables
+        self.changing_vars = set()
+        if self.name == "assign":
+            self.changing_vars.add(self.children[0].value.value)
+        elif not self.is_expression:
+            for child in self.children:
+                if child is not None:
+                    self.changing_vars.update(child.changing_vars)
+        
     def __str__(self) -> str:
         if self.name == "leaf":
             return self.value.value
@@ -255,7 +265,7 @@ class ParserNode:
 
         elif self.name == "while":
             cond = self.children[0].to_while_str()
-            inv = self.children[1].to_while_str(tabs + "\t")
+            inv = self.children[1].to_while_str(tabs + "\t") if self.children[1] is not None else ""
             code = self.children[2].to_while_str(tabs + "\t")
             raw_string += f"while {cond}" + "{\n" + inv + "\n" + code + "\n" + tabs + "};"
         

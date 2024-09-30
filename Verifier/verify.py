@@ -1,6 +1,6 @@
 
 from Parser.parser import ParserNode
-from Verifier.verifcation_condition import verification_condition
+from Verifier.verification_condition2 import verification_condition, UNDEFINED_VAR_TRANS
 from Verifier.PreVeriferProcessing.preprocessor import preprocess
 from Verifier.PreVeriferProcessing.expression_trans import INT_VARIABLE_CORRESPONDENCE
 
@@ -35,8 +35,12 @@ def verify(code: ParserNode):
             model = solver.model()
             for v in model:
                 name = v.name()
+                if name in UNDEFINED_VAR_TRANS:
+                    name = UNDEFINED_VAR_TRANS[name]
                 if name in INT_VARIABLE_CORRESPONDENCE:
                     name = INT_VARIABLE_CORRESPONDENCE[name].to_while_str()
+                
+
                 
                 print(f"{name} = {model[v]}")
             return

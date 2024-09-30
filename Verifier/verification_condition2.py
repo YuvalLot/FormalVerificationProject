@@ -23,6 +23,7 @@ ALLOWED_COMMANDS = [
 INNER_RET_VARIABLE = z3.Int("RET")
 
 UNDEFINED_VAR_COUNT = 0
+UNDEFINED_VAR_TRANS = {}
 
 
 """
@@ -61,6 +62,8 @@ def weakest_liberal_pre(code: ParserNode,
                         post_cond: z3.BoolRef,
                         post_line_no: set[int],
                         side_effects: list[(z3.BoolRef, int)]):
+    
+    global UNDEFINED_VAR_COUNT
     
     # print(code)
     # TODO: change post_line_no to be a set[Token]
@@ -172,7 +175,7 @@ def weakest_liberal_pre(code: ParserNode,
         # TODO: while inv is None
         if while_inv is None:
             print("WARNING: loop without inv")
-            while_inv_line = code.value.line
+            while_inv_line = code.value.lineno
             while_inv = z3.BoolVal(True)
         
         else:
@@ -182,26 +185,15 @@ def weakest_liberal_pre(code: ParserNode,
         while_cond = while_cond.to_z3_bool() 
 
         involved_variables : set = while_body.changing_vars
-        
-        # print(f"DISECTING {post_cond}")
-        g = z3.Goal()
-        g.add(post_cond)
-        t = z3.Tactic('tseitin-cnf')
-        clauses = t(g)
-        for (i, clause) in enumerate(clauses[0]):
-            clause: z3.BoolRef
-            # print(f"clause{i}: {clause}, {get_free_vars(clause)}")
-            free_vars : set = get_free_vars(clause)
-            if involved_variables.isdisjoint(free_vars):
-                # TODO: somehow signal to the user that we changed/added an invariant
-                while_inv = z3.And(while_inv, clause)
-        
-        print(f"new invariant: {while_inv}")
 
+        """
         side_effects.append(
             (z3.Implies(z3.And(while_inv, z3.Not(while_cond)), post_cond), post_line_no),
         )
+        """
 
+        # side effects that make sure the loop is correct, i.e. the loop invariant
+        # is preserved 
         wlps_while_inv = weakest_liberal_pre(
             while_body, while_inv, {while_inv_line}, side_effects
         )
@@ -215,7 +207,24 @@ def weakest_liberal_pre(code: ParserNode,
                 )
             )
 
-        return [(while_inv, {while_inv_line})]
+        dictionary = []
+        for variable in involved_variables:
+            undefined_variable = z3.Int(f"${UNDEFINED_VAR_COUNT}")
+            
+            dictionary.append((z3.Int(variable), undefined_variable))
+            UNDEFINED_VAR_TRANS[f"${UNDEFINED_VAR_COUNT}"] = variable
+            
+            UNDEFINED_VAR_COUNT += 1
+
+        undefined_inv = z3.substitute(while_inv, dictionary)   
+        undefined_cond = z3.substitute(while_cond, dictionary)   
+        undefined_post = z3.substitute(post_cond, dictionary)
+
+        return [(while_inv, {while_inv_line}), 
+                (z3.Implies(
+                    z3.And(undefined_inv, z3.Not(undefined_cond)), 
+                    undefined_post), post_line_no)
+        ]
 
     if code.name == "error":
         return [z3.BoolVal(False), {code.value.lineno}]
