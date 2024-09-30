@@ -1,0 +1,5 @@
+
+forall x :: (x > 0 && x < 20) -> FACT(x) = x * FACT(x-1);
+assume FACT(0) = 1;
+
+assert FACT(5) != x;

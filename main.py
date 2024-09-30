@@ -27,7 +27,7 @@ if failure:
     print("Parsing error:", parsed)
     exit()
 
-# print(parsed)
+print(parsed)
 
 """
 env = Enviornment()

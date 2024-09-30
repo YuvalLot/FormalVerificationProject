@@ -123,7 +123,6 @@ def expression_trans(expression: ParserNode, functions: dict[str, ParserNode]):
                         ])
                 )
 
-
             return (logics, dictionary["RET"])
 
         else:

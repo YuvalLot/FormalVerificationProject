@@ -14,6 +14,7 @@ def verify(code: ParserNode):
 
     try:
         code = ParserNode("seq", code.value, preprocess(code))
+        print("...............",code)
     except RecursionError:
         print("There was a recursion error in translating the functions")
         return
