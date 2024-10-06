@@ -1,6 +1,6 @@
 
 from Parser.parser import ParserNode
-from Verifier.verification_condition2 import verification_condition, UNDEFINED_VAR_TRANS
+from Verifier.verification_condition import verification_condition, UNDEFINED_VAR_TRANS
 from Verifier.PreVeriferProcessing.preprocessor import preprocess
 from Verifier.PreVeriferProcessing.expression_trans import INT_VARIABLE_CORRESPONDENCE
 
@@ -29,8 +29,9 @@ def verify(code: ParserNode):
         solver = z3.Solver()
 
         solver.add(z3.Not(condition))
+        status = solver.check()
 
-        if solver.check() == z3.sat:
+        if status == z3.sat:
             print(f"Unable to verify condition in line {line_number}, e.g.: ")
             model = solver.model()
             for v in model:
@@ -45,5 +46,9 @@ def verify(code: ParserNode):
                 print(f"{name} = {model[v]}")
             return
     
+        if status == z3.unknown:
+            print(f"Unable to prove or disprove line {line_number}")
+            return
+
     print("Verified!")
    
