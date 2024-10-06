@@ -1,7 +1,22 @@
 Questions:
 
 1. How long is the presentation?
+    - 15 mins.
 2. What do you expect to be presented in the presentation?
+    - explian the capabilities!
+    - examples of stuff that goes through verification!
+    - features
+    - challenges + solutions
+    - unsolved stuff, thigs that don't work
 3. More of a focus on the final product? More on the journey?
+    - final product
 4. Do we submit our code somewhere?
-5. Should we show some examples? 
+    - read me 
+5. Should we show some examples?  
+    - yes
+
+6. WLP of while that we did (1st & 2nd)
+    - find paper on wlp of while
+
+7. date set up
+    - email. 
