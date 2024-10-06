@@ -20,3 +20,26 @@ Questions:
 
 7. date set up
     - email. 
+
+Extra notes:
+- note: Z3 can build const. (or קבועות בחלקים) functions, has trouble solving more complex functions for infinite models.
+- our forall is still helpful: can help with BOUNDED MODEL CHECKING.
+- optional: f(1) --> @f__1 (easier computation for z3)
+
+TO DO:
+* make the verification more readable
+* send email to schedule presentation time (29 or 30 in oct)
+* look up papers about wlp and loops?
+* README: how to write code, how to run Verification, how to read results
+* options for MAIN: print pre-process result, print details of all verification conditions, if YES pre-process: print temp-variables after pre-process.
+* explain WHY the invariant fails verification: PRINT: P->inv fails OR {b&&inv} c; {inv} fails.
+* explain why 1st auto-inv is weak + examples
+* "loops are bad": add old VCs more clearly
+* when cannot verify, returns line or lines of problem origin. why can it be from more than a single line? 
+ NOTE: code already fixed, required changing IF wlp. ADD TO PRESENTATION
+
+FORALL
+optional change:
+* no free variables
+* global for functions
+
