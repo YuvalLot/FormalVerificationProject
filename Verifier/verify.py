@@ -18,21 +18,20 @@ def verify(code: ParserNode):
         print("There was a recursion error in translating the functions")
         return
     
-    print(code.to_while_str())
+    # print(code.to_while_str())
 
     vc = verification_condition(z3.BoolVal(True), code, z3.BoolVal(True), -1)
-    print(INT_VARIABLE_CORRESPONDENCE)
+    # print(INT_VARIABLE_CORRESPONDENCE)
     
     for (condition, line_number) in vc:
-        print(f"verifying {condition} in line number(s): "
-              f"{', '.join(map(str, line_number))}")
+        print(f"verifying {condition} in line number(s): {', '.join(map(str, line_number))}")
         solver = z3.Solver()
 
         solver.add(z3.Not(condition))
         status = solver.check()
 
         if status == z3.sat:
-            print(f"Unable to verify condition in line {line_number}, e.g.: ")
+            print(f"Unable to verify condition in line {line_number}, e.g.:\n[")
             model = solver.model()
             for v in model:
                 name = v.name()
@@ -41,9 +40,8 @@ def verify(code: ParserNode):
                 if name in INT_VARIABLE_CORRESPONDENCE:
                     name = INT_VARIABLE_CORRESPONDENCE[name].to_while_str()
                 
-
-                
-                print(f"{name} = {model[v]}")
+                print(f"    {name} = {model[v]},")
+            print("]")
             return
     
         if status == z3.unknown:

@@ -27,8 +27,6 @@ if failure:
     print("Parsing error:", parsed)
     exit()
 
-print(parsed)
-
 """
 env = Enviornment()
 failure, msg = execute(parsed, env)

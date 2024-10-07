@@ -36,7 +36,6 @@ def verification_condition(pre_cond: z3.BoolRef,
                            code: ParserNode, 
                            post_cond: z3.BoolRef, 
                            post_line_no: int):
-    assert not code.is_expression
 
     side_eff = []
     wlps_linenos = weakest_liberal_pre(code, post_cond, {post_line_no}, side_eff)
@@ -64,8 +63,6 @@ def weakest_liberal_pre(code: ParserNode,
                         side_effects: list[(z3.BoolRef, int)]):
     
     global UNDEFINED_VAR_COUNT
-    
-    # print(code)
     
     assert isinstance(post_cond, z3.BoolRef), f"{post_cond}"
 
@@ -184,7 +181,6 @@ def weakest_liberal_pre(code: ParserNode,
 
         while_cond, while_inv, while_body = code.children
         
-        # TODO: while inv is None
         if while_inv is None:
             print("WARNING: loop without inv")
             while_inv_line = code.value.lineno
@@ -199,6 +195,7 @@ def weakest_liberal_pre(code: ParserNode,
         involved_variables : set = while_body.changing_vars
 
         """
+        old approach:
         side_effects.append(
             (z3.Implies(z3.And(while_inv, z3.Not(while_cond)), post_cond), post_line_no),
         )
@@ -206,18 +203,22 @@ def weakest_liberal_pre(code: ParserNode,
 
         # side effects that make sure the loop is correct, i.e. the loop invariant
         # is preserved 
-        wlps_while_inv = weakest_liberal_pre(
-            while_body, while_inv, {while_inv_line}, side_effects
-        )
-
-        for (wlp_inv, lines_derived) in wlps_while_inv:
-            
-            side_effects.append(
-                (
-                    z3.Implies(z3.And(while_cond, while_inv), wlp_inv), 
-                    lines_derived
-                )
+        # if the internal verification has alreay been added, no need to add again
+        if not code.added_internal_verification:
+            wlps_while_inv = weakest_liberal_pre(
+                while_body, while_inv, {while_inv_line}, side_effects
             )
+
+            for (wlp_inv, lines_derived) in wlps_while_inv:
+                
+                side_effects.append(
+                    (
+                        z3.Implies(z3.And(while_cond, while_inv), wlp_inv), 
+                        lines_derived
+                    )
+                )
+            
+            code.added_internal_verification = True
 
         dictionary = []
         for variable in involved_variables:
@@ -250,10 +251,12 @@ def weakest_liberal_pre(code: ParserNode,
 
 
         # add the side effects
-        side_effects += verification_condition(z3.BoolVal(True), 
-                                               func_code, 
-                                               z3.BoolVal(True), 
-                                               code.value.lineno)
+        if not code.added_internal_verification:
+            side_effects += verification_condition(z3.BoolVal(True), 
+                                                func_code, 
+                                                z3.BoolVal(True), 
+                                                code.value.lineno)
+            code.added_internal_verification = True
 
         # other than the side effects, function definition essentially acts as a skip;
         return [(post_cond, post_line_no)]

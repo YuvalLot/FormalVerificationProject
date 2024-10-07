@@ -89,6 +89,10 @@ class ParserNode:
             for child in self.children:
                 if child is not None:
                     self.changing_vars.update(child.changing_vars)
+
+        # internal verification: for functions and loops, there are 
+        # seperate internal verfications, which only need to be added once
+        self.added_internal_verification = False
         
     def __str__(self) -> str:
         if self.name == "leaf":
