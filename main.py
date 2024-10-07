@@ -11,8 +11,7 @@ from Verifier.PreVeriferProcessing.preprocessor import preprocess
 from main_options import get_main_options
 
 
-program_args = [arg for arg in sys.argv if not arg.startswith('-')]
-file_name = "file1.while" if (len(program_args) == 1) else program_args[1]
+file_name = "file1.while" if ((len(sys.argv) <= 1 )or(sys.argv[1].startswith('-'))) else sys.argv[1]
 with open(file_name, "r") as file:
     text = file.read()
 

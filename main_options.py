@@ -3,6 +3,8 @@ import sys
 
 DEFINED_FLAGS = ["-pre", "-VC", "-inner", "-weak_post", "-run"]
 
+true_values = {"true", "1", "yes", "on"}
+false_values = {"false", "0", "no", "off"}
 
 def get_main_options():
 
@@ -17,7 +19,15 @@ def get_main_options():
                 exit()
             # Check for a value associated with the flag
             if index + 1 < len(sys.argv) and not sys.argv[index + 1].startswith('-'):
-                flags[arg] = sys.argv[index + 1]
+                value = sys.argv[index + 1].lower()
+                # Handle 'true' and 'false' values
+                if value in true_values:
+                    flags[arg[1:]] = True
+                elif value in false_values:
+                    flags[arg[1:]] = False
+                else:
+                    print(f"Error: invalid value: {value} for flag: {arg}")
+                    exit()
                 index += 2  # Move past the value
             else:
                 flags[arg[1:]] = True  # If no value, just set the flag as True
