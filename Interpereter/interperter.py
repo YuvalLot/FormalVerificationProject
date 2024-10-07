@@ -63,7 +63,7 @@ def pattern_match(params, function_params):
 # for error:   1, error_msg, token
 def evaluate(node: ParserNode, env: Enviornment):
 
-    print(f"evaluating {node} in env {env}")
+    # print(f"evaluating {node} in env {env}")
 
     if node.name == "leaf":
         if node.value.name == "int":
@@ -146,7 +146,7 @@ def evaluate(node: ParserNode, env: Enviornment):
         # print(name, params)
 
         func = env.functions[name.value.value]
-        func_name, func_params, func_assert, func_body = func.children
+        func_name, func_params, func_pre, func_body, func_post = func.children
 
         fail, params, tok = evaluate(params, env)
         if fail:
@@ -290,7 +290,8 @@ def execute(node: ParserNode, env=None):
         return 0, value
 
     elif node.name == "def":
-        func_name, _, _, _ = node.children
+        print(node.children)
+        func_name, _, _, _, _ = node.children
         env.functions[func_name.value.value] = node
 
     else:

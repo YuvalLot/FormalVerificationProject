@@ -1,0 +1,20 @@
+
+Main Options:
+
+1. main.py (file_name) -pre 
+   shows the result of the preprocessor 
+
+2. main.py (file_name) -VC
+   reveales all of the verification conditions that are checked in the verification 
+   process.
+
+3. main.py (file_name) -inner
+   show the inner variables' assignments (inner variables = variables added in the 
+   preprocessing phase).
+
+4. main.py (file_name) -weak_post
+   Use weak post conditions (i.e., remove the addition of the origin of inner 
+   variables that replace function uses)
+
+5. main.py (file_name) -run
+   runs (interprets) the code instead of verifying it.

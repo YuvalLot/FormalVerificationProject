@@ -30,7 +30,7 @@ UNDEFINED_VAR_TRANS = {}
 returns a list of conditions so that {pre_cond}code{post_cond} is valid
 if and only if the returns list is all valid.
 
-returns: list[ ( z3.BoolRef, set[int] ) ]
+returns: list[ ( z3.BoolRef, int ) ]
 """
 def verification_condition(pre_cond: z3.BoolRef, 
                            code: ParserNode, 
@@ -38,7 +38,7 @@ def verification_condition(pre_cond: z3.BoolRef,
                            post_line_no: int):
 
     side_eff = []
-    wlps_linenos = weakest_liberal_pre(code, post_cond, {post_line_no}, side_eff)
+    wlps_linenos = weakest_liberal_pre(code, post_cond, post_line_no, side_eff)
 
     return side_eff + \
         [(z3.Implies(pre_cond, wlp), lineno) for (wlp, lineno) in wlps_linenos]
@@ -47,7 +47,7 @@ def verification_condition(pre_cond: z3.BoolRef,
 
 
 """
-returns list[ (P: z3.BoolRef, derived_from_lines: set[int]) ]
+returns list[ (P: z3.BoolRef, derived_from_lines: int) ]
 
 P: the weakest precondition {P} so that {P}code{Q} is valid, 
    if all of the conditions added to side_effects are valid
@@ -55,11 +55,11 @@ P: the weakest precondition {P} so that {P}code{Q} is valid,
    The reason this is a list, and not an AND clause of all the items in the list, 
    is that we can track which requirements came from which lines
 
-derived_from_lines: line number(s) that derive P (for debugging purposes)
+post_line_no: line number that derive P (for debugging purposes)
 """
 def weakest_liberal_pre(code: ParserNode,
                         post_cond: z3.BoolRef,
-                        post_line_no: set[int],
+                        post_line_no: int,
                         side_effects: list[(z3.BoolRef, int)]):
     
     global UNDEFINED_VAR_COUNT
@@ -156,12 +156,15 @@ def weakest_liberal_pre(code: ParserNode,
 
         if post_cond is exactly the value True, we skip 2 (since it is obvious)
         """
+        
+        
 
         if post_cond == z3.BoolVal(True):
-            return [(condition_asserted, {code.value.lineno})]
+            return [(condition_asserted, code.value.lineno)]
         
-        return [(condition_asserted, {code.value.lineno}), 
-               (z3.Implies(condition_asserted, post_cond), post_line_no)]
+        return [(condition_asserted, code.value.lineno), 
+            (z3.Implies(condition_asserted, post_cond), post_line_no)]
+        
     
     if code.name == "assume":
         """
@@ -206,7 +209,7 @@ def weakest_liberal_pre(code: ParserNode,
         # if the internal verification has alreay been added, no need to add again
         if not code.added_internal_verification:
             wlps_while_inv = weakest_liberal_pre(
-                while_body, while_inv, {while_inv_line}, side_effects
+                while_body, while_inv, while_inv_line, side_effects
             )
 
             for (wlp_inv, lines_derived) in wlps_while_inv:
@@ -233,14 +236,14 @@ def weakest_liberal_pre(code: ParserNode,
         undefined_cond = z3.substitute(while_cond, dictionary)   
         undefined_post = z3.substitute(post_cond, dictionary)
 
-        return [(while_inv, {while_inv_line}), 
+        return [(while_inv, while_inv_line), 
                 (z3.Implies(
                     z3.And(undefined_inv, z3.Not(undefined_cond)), 
                     undefined_post), post_line_no)
         ]
 
     if code.name == "error":
-        return [z3.BoolVal(False), {code.value.lineno}]
+        return [z3.BoolVal(False), code.value.lineno]
 
     if code.name == "def": 
         """
@@ -251,7 +254,7 @@ def weakest_liberal_pre(code: ParserNode,
 
 
         # add the side effects
-        if not code.added_internal_verification:
+        if True: # not code.added_internal_verification:
             side_effects += verification_condition(z3.BoolVal(True), 
                                                 func_code, 
                                                 z3.BoolVal(True), 

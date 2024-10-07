@@ -13,7 +13,8 @@ INT_VARIABLE_CORRESPONDENCE = {}
 
 # for failure, (error_msg, None)
 
-def expression_trans(expression: ParserNode, functions: dict[str, ParserNode]):
+def expression_trans(expression: ParserNode, functions: dict[str, ParserNode], 
+                     flags):
     
     global INT_VARIABLE_COUNT
 
@@ -32,7 +33,7 @@ def expression_trans(expression: ParserNode, functions: dict[str, ParserNode]):
         logics = []
         new_children = []
         for operand in operands:
-            (logic, new_exp) = expression_trans(operand, functions)
+            (logic, new_exp) = expression_trans(operand, functions, flags)
             if new_exp is None:
                 return (logic, new_exp)
             logics += logic
@@ -43,6 +44,7 @@ def expression_trans(expression: ParserNode, functions: dict[str, ParserNode]):
 
 
     elif expression.name == "apply":
+
         func_name, func_param = expression.children
 
         if func_param is None:
@@ -53,9 +55,10 @@ def expression_trans(expression: ParserNode, functions: dict[str, ParserNode]):
             func_param = [func_param]
         
         logics = []
+        
         new_params = []
         for operand in func_param:
-            (logic, new_exp) = expression_trans(operand, functions)
+            (logic, new_exp) = expression_trans(operand, functions, flags)
             if new_exp is None:
                 return (logic, new_exp)
             logics += logic
@@ -99,7 +102,8 @@ def expression_trans(expression: ParserNode, functions: dict[str, ParserNode]):
 
             if func_pre is not None:
                 pre_condition = func_pre.children[0].substitute(dictionary)
-                (pre_logic, new_pre_cond) = expression_trans(pre_condition, functions)
+                (pre_logic, new_pre_cond) = expression_trans(pre_condition, functions, 
+                                                             flags)
                 if new_pre_cond is None:
                     return (pre_logic, new_pre_cond)
                 logics += pre_logic
@@ -109,26 +113,31 @@ def expression_trans(expression: ParserNode, functions: dict[str, ParserNode]):
             
             if func_post is not None:
                 post_condition = func_post.children[0].substitute(dictionary)
-                (post_logic, new_post_cond) = expression_trans(post_condition, functions)
+                (post_logic, new_post_cond) = expression_trans(post_condition, 
+                                                               functions, flags)
                 if new_post_cond is None:
                     return (post_logic, new_post_cond)
                 logics += post_logic
-                logics.append(
-                    ParserNode("assume", func_name.value, [
-                        ParserNode("op&&", 
-                                   func_name.value, [new_post_cond, 
-                                                     ParserNode("op=", func_name.value, 
-                                                                [ParserNode("apply", expression.value, [func_name, new_params_parser_node], is_expression = True), dictionary["RET"]], is_expression = True)],
-                                    is_expression = True)
-                        ])
-                )
+                if flags["weak_post"]:
+                    logics.append(ParserNode("assume", func_name.value, [new_post_cond]))
+                else:
+                    logics.append(
+                        ParserNode("assume", func_name.value, [
+                            ParserNode("op&&", 
+                                    func_name.value, [new_post_cond, 
+                                                        ParserNode("op=", func_name.value, 
+                                                                    [ParserNode("apply", expression.value, [func_name, new_params_parser_node], is_expression = True), dictionary["RET"]], is_expression = True)],
+                                        is_expression = True)
+                            ])
+                    )
             else:
-                logics.append(
-                    ParserNode("assume", func_name.value, [ 
-                                ParserNode("op=", func_name.value, 
-                                [ParserNode("apply", expression.value, [func_name, new_params_parser_node], is_expression = True), dictionary["RET"]], is_expression = True)]
-                        )
-                )
+                if not flags["weak_post"]:
+                    logics.append(
+                        ParserNode("assume", func_name.value, [ 
+                                    ParserNode("op=", func_name.value, 
+                                    [ParserNode("apply", expression.value, [func_name, new_params_parser_node], is_expression = True), dictionary["RET"]], is_expression = True)]
+                            )
+                    )
 
             return (logics, dictionary["RET"])
 

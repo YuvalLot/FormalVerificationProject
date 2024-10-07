@@ -8,23 +8,35 @@ import z3
 
 
 # returns object of type Verification
-def verify(code: ParserNode):
+def verify(code: ParserNode, 
+           flags):
 
     # preprocess
 
     try:
-        code = ParserNode("seq", code.value, preprocess(code))
+        code = ParserNode("seq", code.value, preprocess(code, flags=flags))
     except RecursionError:
         print("There was a recursion error in translating the functions")
         return
     
-    # print(code.to_while_str())
+    if flags["pre"]:
+        print("==================================")
+        print("Preprocessor results:\n")
+        print(code.to_while_str())
+        print("=================================\n")
 
     vc = verification_condition(z3.BoolVal(True), code, z3.BoolVal(True), -1)
     # print(INT_VARIABLE_CORRESPONDENCE)
     
     for (condition, line_number) in vc:
-        print(f"verifying {condition} in line number(s): {', '.join(map(str, line_number))}")
+        if line_number == -1:
+            # this is the EOF verfication that is used to kickstart the verification 
+            # process. We can ignore it
+            continue
+
+        if flags["VC"]:
+            print(f"verifying {condition} in line number: {line_number}")
+
         solver = z3.Solver()
 
         solver.add(z3.Not(condition))
@@ -37,8 +49,10 @@ def verify(code: ParserNode):
                 name = v.name()
                 if name in UNDEFINED_VAR_TRANS:
                     name = UNDEFINED_VAR_TRANS[name]
-                if name in INT_VARIABLE_CORRESPONDENCE:
-                    name = INT_VARIABLE_CORRESPONDENCE[name].to_while_str()
+                
+                if name[0] == "@" and not flags["inner"]:
+                    # internal variable
+                    continue
                 
                 print(f"    {name} = {model[v]},")
             print("]")

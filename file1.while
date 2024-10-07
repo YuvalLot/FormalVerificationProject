@@ -1,9 +1,7 @@
 def f(x) {
-    assume x >= 0;
-    return x + 1;
-    assert RET >= 1;
+    return x;
+    assert RET = x;
 };
 
-assert f(0) = 0;
-assert f(1) = 1;
-assert f(2) = 3;
+x := 1;
+assert f(x+1)=1;

@@ -8,11 +8,17 @@ import sys
 from Verifier.verify import verify
 from Verifier.PreVeriferProcessing.preprocessor import preprocess
 
+from main_options import get_main_options
+
 
 
 file_name = "file1.while" if (len(sys.argv) == 1) else sys.argv[1]
 with open(file_name, "r") as file:
     text = file.read()
+
+
+flags = get_main_options()
+
 
 tokens, success = Tokens.tokenize(text)
 # print(tokens)
@@ -27,15 +33,17 @@ if failure:
     print("Parsing error:", parsed)
     exit()
 
-"""
-env = Enviornment()
-failure, msg = execute(parsed, env)
-if failure:
-    print("Execution error:", msg)
+if flags["run"]:
 
-print(env.assignments)
-print(env.functions)
-"""
+    env = Enviornment()
+    failure, msg = execute(parsed, env)
+    if failure:
+        print("Execution error:", msg)
 
-verify(parsed)
+    # print(env.assignments)
+    # print(env.functions)
+    exit()
+
+
+verify(parsed, flags)
 
