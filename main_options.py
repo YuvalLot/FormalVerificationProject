@@ -1,7 +1,7 @@
 import sys
 
 
-DEFINED_FLAGS = ["-pre", "-VC", "-inner", "-weak_post", "-run"]
+DEFINED_FLAGS = ["-pre", "-VC", "-inner", "-weak_post", "-run", "-ignore_unknown"]
 
 
 def get_main_options():

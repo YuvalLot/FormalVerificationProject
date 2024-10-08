@@ -60,6 +60,8 @@ def verify(code: ParserNode,
     
         if status == z3.unknown:
             print(f"Unable to prove or disprove line {line_number}")
+            if flags["ignore_unknown"]:
+                continue
             return
 
     print("Verified!")
