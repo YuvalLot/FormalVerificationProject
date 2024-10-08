@@ -1,8 +1,9 @@
 
-def f(x) {
-    return 1;
-};
-x := f(1);
-y := f(1);
-assert x = y;
+forall x :: ID(x) = x;
 
+def f(x) {
+    return x;
+    assert RET = ID(x);
+};
+
+assert 5 = f(5);

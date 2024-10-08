@@ -25,7 +25,7 @@ def verify(code: ParserNode,
         print(code.to_while_str())
         print("=================================\n")
 
-    vc = verification_condition(z3.BoolVal(True), code, z3.BoolVal(True), -1)
+    vc, logical_conds = verification_condition(z3.BoolVal(True), code, z3.BoolVal(True), -1)
     # print(INT_VARIABLE_CORRESPONDENCE)
     
     for (condition, line_number) in vc:
@@ -33,12 +33,15 @@ def verify(code: ParserNode,
             # this is the EOF verfication that is used to kickstart the verification 
             # process. We can ignore it
             continue
-
+        if logical_conds != []:
+            for func_cond in logical_conds:
+                condition = z3.Implies(func_cond,condition)
+  
         if flags["VC"]:
             print(f"verifying {condition} in line number: {line_number}")
 
         solver = z3.Solver()
-
+   
         solver.add(z3.Not(condition))
         status = solver.check()
 
