@@ -3,22 +3,6 @@ from Parser.parser_node import ParserNode
 from Verifier.helper import get_free_vars
 import z3
 
-"""
-POSSIBLE_NODE_NAMES = [
-    "op+", "op-", "op*", "op/", "op&&", "op||", "op~", "leaf",       # expression types
-    "op%",
-
-    "skip", "assign",  # command types
-    "print"
-
-    "while", "if", "seq",
-]
-"""
-
-ALLOWED_COMMANDS = [
-    "skip", "assign", "seq", "print", "if", "assume",
-    "while", "def", "forall"
-]
 
 INNER_RET_VARIABLE = z3.Int("RET")
 
@@ -47,7 +31,7 @@ def verification_condition(pre_cond: z3.BoolRef,
 
 
 """
-returns list[ (P: z3.BoolRef, derived_from_lines: int) ]
+returns list[ (P: z3.BoolRef, derived_from_lines: int) ], list[ .. ]
 
 P: the weakest precondition {P} so that {P}code{Q} is valid, 
    if all of the conditions added to side_effects are valid
@@ -65,8 +49,6 @@ def weakest_liberal_pre(code: ParserNode,
     global UNDEFINED_VAR_COUNT
     
     assert isinstance(post_cond, z3.BoolRef), f"{post_cond}"
-
-    # print(f"Trying to verify: {{ {pre_cond} }} {code} {{ {post_cond} }}")
 
     if code.name == "assign":
         variable = code.children[0].to_z3_int()

@@ -28,7 +28,8 @@ def verify(code: ParserNode,
     vc, logical_conds = verification_condition(z3.BoolVal(True), code, z3.BoolVal(True), -1)
     # print(INT_VARIABLE_CORRESPONDENCE)
     
-    for (condition, line_number) in vc:
+    for (index, pair) in enumerate(vc):
+        (condition, line_number) = pair
         if line_number == -1:
             # this is the EOF verfication that is used to kickstart the verification 
             # process. We can ignore it
@@ -39,8 +40,8 @@ def verify(code: ParserNode,
                 condition = z3.Implies(func_cond,condition)
   
         if flags["VC"]:
-            print("------------------------")
-            print(f"verifying {condition} in line number: {line_number}")
+            print("=================================")
+            print(f"VC #{index + 1}:\n{condition} in line number: {line_number}")
 
         solver = z3.Solver()
    
@@ -68,6 +69,9 @@ def verify(code: ParserNode,
             if flags["ignore_unknown"]:
                 continue
             return
+        
+        if flags["VC"]:
+            print("Verified!")
 
     print("Verified!")
    
