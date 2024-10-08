@@ -236,7 +236,8 @@ def weakest_liberal_pre(code: ParserNode,
             undefined_variable = z3.Int(f"${UNDEFINED_VAR_COUNT}")
             
             dictionary.append((z3.Int(variable), undefined_variable))
-            UNDEFINED_VAR_TRANS[f"${UNDEFINED_VAR_COUNT}"] = variable
+            UNDEFINED_VAR_TRANS[f"${UNDEFINED_VAR_COUNT}"] = (variable, 
+                                                              code.value.lineno)
             
             UNDEFINED_VAR_COUNT += 1
 

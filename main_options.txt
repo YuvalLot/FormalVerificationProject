@@ -18,3 +18,9 @@ Main Options:
 
 5. main.py (file_name) -run
    runs (interprets) the code instead of verifying it.
+
+6. main.py (file_name) -ignore_unknown
+   when z3 cannot verify or disprove, continue.
+
+7. main.py (file_name) -wlp
+   print the calculated wlp(s) (weakest liberal pre-condition) of the program
