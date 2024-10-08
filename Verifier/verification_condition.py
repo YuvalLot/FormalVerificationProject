@@ -38,10 +38,10 @@ def verification_condition(pre_cond: z3.BoolRef,
                            post_line_no: int):
 
     side_eff = []
-    wlps_linenos = weakest_liberal_pre(code, post_cond, post_line_no, side_eff)
+    wlps_linenos, logical_functions = weakest_liberal_pre(code, post_cond, post_line_no, side_eff)
 
     return side_eff + \
-        [(z3.Implies(pre_cond, wlp), lineno) for (wlp, lineno) in wlps_linenos]
+        [(z3.Implies(pre_cond, wlp), lineno) for (wlp, lineno) in wlps_linenos], logical_functions
 
     # print(f"Trying to verify: {{ {pre_cond} }} {code} {{ {post_cond} }}")
 
@@ -75,17 +75,17 @@ def weakest_liberal_pre(code: ParserNode,
             post_cond, 
             (variable, expression)
             )
-        return [ (updated_post, post_line_no) ]
+        return [ (updated_post, post_line_no) ], []
     
     if code.name in ["skip", "print"] or code.is_expression:
-        return [(post_cond, post_line_no)]
+        return [(post_cond, post_line_no)], []
     
     if code.name == "if":
 
         if_cond, then_code, else_code = code.children
         if_cond = if_cond.to_z3_bool()
-        then_wlps = weakest_liberal_pre(then_code, post_cond, post_line_no, side_effects)
-        else_wlps = weakest_liberal_pre(else_code, post_cond, post_line_no, side_effects)
+        then_wlps, _ = weakest_liberal_pre(then_code, post_cond, post_line_no, side_effects)
+        else_wlps, _ = weakest_liberal_pre(else_code, post_cond, post_line_no, side_effects)
 
         ret = []
 
@@ -115,33 +115,41 @@ def weakest_liberal_pre(code: ParserNode,
                 )
         """
 
-        return ret
+        return ret, []
 
     if code.name == "seq": 
         current_posts = [(post_cond, post_line_no)]
 
        # to verify a sequence, calculate the wlp of each statement in reverse order
         index = len(code.children) - 1
+        new_logical_funcs = []
 
         while index >= 0:
             child = code.children[index]
             index -= 1
             
             next_posts = []
+            
 
             for (current_post, current_derived) in current_posts:
                 # 'chain' the post conditions:
                 # whatever pre conditions needed ro get all post conditions
                 # gained so far
-                next_posts += \
+                next_wlp = \
                     weakest_liberal_pre(child, 
                                         current_post,
                                         current_derived, 
                                         side_effects)
+                next_posts += next_wlp[0]
+
+                for item in next_wlp[1]:
+                    if item not in new_logical_funcs:
+                        new_logical_funcs.append(item)
+                
             
             current_posts = next_posts
 
-        return current_posts
+        return current_posts, new_logical_funcs
 
     if code.name == "assert":
         condition_asserted = code.children[0].to_z3_bool()
@@ -160,10 +168,10 @@ def weakest_liberal_pre(code: ParserNode,
         
 
         if post_cond == z3.BoolVal(True):
-            return [(condition_asserted, code.value.lineno)]
+            return [(condition_asserted, code.value.lineno)], []
         
         return [(condition_asserted, code.value.lineno), 
-            (z3.Implies(condition_asserted, post_cond), post_line_no)]
+            (z3.Implies(condition_asserted, post_cond), post_line_no)], []
         
     
     if code.name == "assume":
@@ -178,7 +186,7 @@ def weakest_liberal_pre(code: ParserNode,
         making the Hoare triple valid.
         """
         condition_assumed = code.children[0].to_z3_bool()
-        return [(z3.Implies(condition_assumed, post_cond), post_line_no)]
+        return [(z3.Implies(condition_assumed, post_cond), post_line_no)], []
 
     if code.name == "while":
 
@@ -208,7 +216,7 @@ def weakest_liberal_pre(code: ParserNode,
         # is preserved 
         # if the internal verification has alreay been added, no need to add again
         if not code.added_internal_verification:
-            wlps_while_inv = weakest_liberal_pre(
+            wlps_while_inv, _ = weakest_liberal_pre(
                 while_body, while_inv, while_inv_line, side_effects
             )
 
@@ -240,10 +248,10 @@ def weakest_liberal_pre(code: ParserNode,
                 (z3.Implies(
                     z3.And(undefined_inv, z3.Not(undefined_cond)), 
                     undefined_post), post_line_no)
-        ]
+        ], []
 
     if code.name == "error":
-        return [z3.BoolVal(False), code.value.lineno]
+        return [z3.BoolVal(False), code.value.lineno], []
 
     if code.name == "def": 
         """
@@ -255,14 +263,15 @@ def weakest_liberal_pre(code: ParserNode,
 
         # add the side effects
         if True: # not code.added_internal_verification:
-            side_effects += verification_condition(z3.BoolVal(True), 
+            func_verification = verification_condition(z3.BoolVal(True), 
                                                 func_code, 
                                                 z3.BoolVal(True), 
                                                 code.value.lineno)
+            side_effects += func_verification[0]
             code.added_internal_verification = True
 
         # other than the side effects, function definition essentially acts as a skip;
-        return [(post_cond, post_line_no)]
+        return [(post_cond, post_line_no)], []
 
     if code.name == "return":
         # {P} return e; {Q} 
@@ -271,7 +280,7 @@ def weakest_liberal_pre(code: ParserNode,
                                      (INNER_RET_VARIABLE, code.children[0].to_z3_int())
                                      )
         
-        return [(updated_post, post_line_no)]
+        return [(updated_post, post_line_no)], []
 
     if code.name == "forall":
         variable = code.children[0]
@@ -282,8 +291,9 @@ def weakest_liberal_pre(code: ParserNode,
         expression = code.children[1].to_z3_bool()
     
         forall_assumption = z3.ForAll(variables, expression)
+
     
-        return [(z3.Implies(forall_assumption, post_cond), post_line_no)]
+        return [(post_cond, post_line_no)], [forall_assumption]
 
 
     else:
