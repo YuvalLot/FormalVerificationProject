@@ -141,7 +141,11 @@ def weakest_liberal_pre(code: ParserNode,
                                         current_derived, 
                                         side_effects)
                 next_posts += next_wlp[0]
-                new_logical_funcs += next_wlp[1]
+
+                for item in next_wlp[1]:
+                    if item not in new_logical_funcs:
+                        new_logical_funcs.append(item)
+                
             
             current_posts = next_posts
 
