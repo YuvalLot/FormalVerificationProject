@@ -85,10 +85,7 @@ def preprocess(code: ParserNode, functions = None, flags = None):
         return [code]
 
     elif code.name == "def": 
-        """
-        To verify a function definition, we add side effect(s) that verify the function's
-        pre-condition implies the wlp of the function's post-condition
-        """
+
         func_name, func_params, func_pre, func_code, func_post = code.children
 
         new_codes = []

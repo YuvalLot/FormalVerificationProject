@@ -25,10 +25,15 @@ def verify(code: ParserNode,
         print(code.to_while_str())
         print("=================================\n")
 
-    vc, logical_conds = verification_condition(z3.BoolVal(True), code, z3.BoolVal(True), -1)
+    vc, logical_conds = verification_condition(z3.BoolVal(True), code, z3.BoolVal(True), -1,
+                                               "" if flags["annot"] else None)
     # print(INT_VARIABLE_CORRESPONDENCE)
     
-    for (condition, line_number) in vc:
+    if flags["annot"]:
+        print(code.annot)
+
+    for (index, pair) in enumerate(vc):
+        (condition, line_number) = pair
         if line_number == -1:
             # this is the EOF verfication that is used to kickstart the verification 
             # process. We can ignore it
@@ -39,8 +44,8 @@ def verify(code: ParserNode,
                 condition = z3.Implies(func_cond,condition)
   
         if flags["VC"]:
-            print("------------------------")
-            print(f"verifying {condition} in line number: {line_number}")
+            print("=================================")
+            print(f"VC #{index + 1}:\n{condition} in line number: {line_number}")
 
         solver = z3.Solver()
    
@@ -53,7 +58,8 @@ def verify(code: ParserNode,
             for v in model:
                 name = v.name()
                 if name in UNDEFINED_VAR_TRANS:
-                    name = UNDEFINED_VAR_TRANS[name]
+                    name, lineno = UNDEFINED_VAR_TRANS[name]
+                    name = f"{name} [AFTER LOOP IN LINE {lineno}]"
                 
                 if name[0] == "@" and not flags["inner"]:
                     # internal variable
@@ -65,7 +71,16 @@ def verify(code: ParserNode,
     
         if status == z3.unknown:
             print(f"Unable to prove or disprove line {line_number}")
+            if flags["ignore_unknown"]:
+                continue
             return
+        
+        if flags["VC"]:
+            print("Verified!")
 
-    print("Verified!")
+    if flags["VC"]:
+        print("=================================")
+        print("Verified all VCs!")
+    else:
+        print("Verified!")
    

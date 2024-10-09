@@ -3,5 +3,4 @@ y := x * x;
 z := x + y;
 x := x * z + 1; 
 y := x + x + y;
-
 assert y = 7;
