@@ -242,7 +242,7 @@ def weakest_liberal_pre(code: ParserNode,
                 while_body, while_inv, while_inv_line, side_effects, new_annot
             )
             if annot is not None:
-                code.annot = annot + f"while ({code.children[0].to_while_str()}) {{" + \
+                code.annot = annot + f"while ({code.children[0].to_while_str()}) {{\n" + \
                     while_body.annot + "\n" + annot + "}"
 
             for (wlp_inv, lines_derived) in wlps_while_inv:
