@@ -1,4 +1,5 @@
 
+<<<<<<< HEAD
 forall x :: (x > 0) -> 1 + F(x-1) = F(x);
 forall x :: F(0) = 0;
 def f(x) {
@@ -16,3 +17,6 @@ def f(x) {
 assume y >= 0;
 assume y <= 5;
 assert f(y) = y;
+=======
+if x then {} else {};
+>>>>>>> 22d3edbbaa083b5d8f980ea7e7897c0e70b51c48

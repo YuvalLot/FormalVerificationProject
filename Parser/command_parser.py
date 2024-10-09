@@ -108,7 +108,7 @@ def parse_command(curr_pos: int, blocks: list,
             if i + 1 >= len(blocks) or \
                 not is_token(blocks[i], "rcurly") or \
                 not is_token(blocks[i+1], "semi"):
-                return 1, block, "Illegal While Structure"
+                return 1, block, "Expected end of block and semi-colon after while"
 
             # while_command should be of ParserNode type: seq
             # if the first element is an inv, pull it out and add it in the while
@@ -132,11 +132,14 @@ def parse_command(curr_pos: int, blocks: list,
             # we're in an if statement
             # we expect:
             #  if [cond_exp] then {...} else {...} ;
-            if i + 4 >= len(blocks) or \
-                 not is_expression(blocks[i + 1]) or \
-                 not is_token(blocks[i+2], "then") or \
-                 not is_token(blocks[i+3], "lcurly"):
-                return 1, block, "Illegal If Structure"
+            if i + 1 >= len(blocks) or not is_expression(blocks[i + 1]):
+                return 1, block, "Expected condition after if (in if command)"
+            
+            if i + 2 >= len(blocks) or not is_token(blocks[i+2], "then"):
+                return 1, block, "Expected 'then' after condition (in if command)"
+
+            if i + 3 >= len(blocks) or not is_token(blocks[i+3], "lcurly"):
+                return 1, block, "Expected '{' after then (in if command)"
             
             if_cond = blocks[i + 1]
 
@@ -146,12 +149,14 @@ def parse_command(curr_pos: int, blocks: list,
             if succ:
                 return succ, i, then_command
             
-            # next we expect rcurly, else, lcurly
-            if i + 3 >= len(blocks) or \
-                 not is_token(blocks[i], "rcurly") or \
-                 not is_token(blocks[i+1], "else") or \
-                 not is_token(blocks[i+2], "lcurly"):
-                return 1, block, "Illegal If Structure"
+            if i >= len(blocks) or not is_token(blocks[i], "rcurly"):
+                return 1, block, "Expected '}' after then block (in if command)"
+            
+            if i + 1 >= len(blocks) or not is_token(blocks[i+1], "else"):
+                return 1, block, "Expected 'else' clause (in if command)"
+
+            if i + 2 >= len(blocks) or not is_token(blocks[i+2], "lcurly"):
+                return 1, block, "Expected '{' after else (in if command)"
             
             # parse the 'else' command
             succ, i, else_command = parse_command(i + 3, blocks, 
@@ -163,14 +168,13 @@ def parse_command(curr_pos: int, blocks: list,
             if i + 1 >= len(blocks) or \
                 not is_token(blocks[i], "rcurly") or \
                 not is_token(blocks[i+1], "semi"):
-                return 1, block, "Illegal If Structure"
+                return 1, block, "Expected '};' at the end of if"
 
             commands.append(ParserNode("if", block, [if_cond, then_command, else_command]))
             
-            # TODO: allow return to appear in then clause and else clause
-            if then_command.contains_return or else_command.contains_return:
+            if bool(then_command.contains_return) != bool(else_command.contains_return):
                 return (1, then_command.contains_return or else_command.contains_return, 
-                        "Return should only appear once at the end of the function")
+                        "Return should appear in both then and else clauses, or in neither one")
 
             i += 2
 
@@ -183,7 +187,7 @@ def parse_command(curr_pos: int, blocks: list,
             #  skip ; 
             if i + 1 >= len(blocks) or \
                  not is_token(blocks[i+1], "semi"):
-                return 1, block, "Illegal Skip Structure"
+                return 1, block, "Expected ';' after skip"
             
             commands.append(ParserNode("skip", block, []))
             
@@ -193,10 +197,12 @@ def parse_command(curr_pos: int, blocks: list,
             # we're in a assert command
             # we expect:
             #  assert [cond_exp] ; 
+            if i + 1 >= len(blocks) or \
+                 not is_expression(blocks[i+1]):
+                return 1, block, "Expected condition after assert" 
             if i + 2 >= len(blocks) or \
-                 not is_expression(blocks[i+1]) or \
                  not is_token(blocks[i+2], "semi"):
-                return 1, block, "Illegal Assert Structure"
+                return 1, block, "Expected ';' at the end of assert command"
             
             commands.append(ParserNode("assert", block, [blocks[i+1]]))
             
@@ -206,10 +212,12 @@ def parse_command(curr_pos: int, blocks: list,
             # we're in an inv command
             # we expect:
             #  inv [cond_exp] ; 
+            if i + 1 >= len(blocks) or \
+                 not is_expression(blocks[i+1]):
+                return 1, block, "Expected condition after inv" 
             if i + 2 >= len(blocks) or \
-                 not is_expression(blocks[i+1]) or \
                  not is_token(blocks[i+2], "semi"):
-                return 1, block, "Illegal Inv Structure"
+                return 1, block, "Expected ';' at the end of inv command"
             
             commands.append(ParserNode("inv", block, [blocks[i+1]]))
             
@@ -222,10 +230,12 @@ def parse_command(curr_pos: int, blocks: list,
             # print command
             # expect:
             #  print expression ;
+            if i + 1 >= len(blocks) or \
+                 not is_expression(blocks[i+1]):
+                return 1, block, "Expected expression after print" 
             if i + 2 >= len(blocks) or \
-                not is_expression(blocks[i + 1]) or \
-                not is_token(blocks[i + 2], "semi"):
-                return 1, block, "Illegal Print Structure"
+                 not is_token(blocks[i+2], "semi"):
+                return 1, block, "Expected ';' at the end of print command"
             
             commands.append(ParserNode("print", block, [blocks[i+1]]))
             
@@ -238,17 +248,16 @@ def parse_command(curr_pos: int, blocks: list,
             # return command
             # expect:
             #  return expression ;
-            if i + 2 >= len(blocks) or \
+            if i + 1 >= len(blocks) or \
                 not is_expression(blocks[i + 1]) or \
-                blocks[i+1].name == "comma" or \
-                not is_token(blocks[i + 2], "semi") or \
-                inside_function == 0:
-                return 1, block, "Illegal Return Structure"
-
-            # TODO: For now, I've decided that function return a single value
-            #       in the future, we might want to allow more flexibility, 
-            #       and in general allow more things to be done with tuples (commas)
-            #       Right now, tuples are only used for passing multiple arguments.
+                blocks[i+1].name == "comma":
+                return 1, block, "Illegal Return (should return a single value)"
+            
+            if i + 2 >= len(blocks) or not is_token(blocks[i + 2], "semi"):
+                return 1, block, "Expected ';' after return"
+            
+            if inside_function == 0:
+                return 1, block, "Return outside of a function is not allowed"
             
             commands.append(ParserNode("return", block, [blocks[i+1]]))
             
@@ -259,10 +268,12 @@ def parse_command(curr_pos: int, blocks: list,
             # we're in a assume command
             # we expect:
             #  assume [cond_exp] ; 
+            if i + 1 >= len(blocks) or \
+                 not is_expression(blocks[i+1]):
+                return 1, block, "Expected condition after assume" 
             if i + 2 >= len(blocks) or \
-                 not is_expression(blocks[i+1]) or \
                  not is_token(blocks[i+2], "semi"):
-                return 1, block, "Illegal Assume Structure"
+                return 1, block, "Expected ';' at the end of assume command"
             
             commands.append(ParserNode("assume", block, [blocks[i+1]]))
             
@@ -284,10 +295,13 @@ def parse_command(curr_pos: int, blocks: list,
                 if not is_assignable(block):
                     return 1, block, f"{block} is not assignable"
                 
+                if i + 2 >= len(blocks):
+                    return 1, blocks[i+1], f"Expected value after ':='"
+                
                 if not can_be_assigned(blocks[i+2]):
-                    return 1, blocks[i+2], f"{blocks[i+2]} cannot be assigned to a variable"
+                    return 1, blocks[i+2], f"E{blocks[i+2]} cannot be assigned to a variable"
 
-                return 1, block, "Illegal Assign Structure"
+                return 1, block, "Expected ';' at the end of assignment"
 
             commands.append(
                 ParserNode("assign", blocks[i+1], [block, blocks[i + 2]])
@@ -303,7 +317,7 @@ def parse_command(curr_pos: int, blocks: list,
             # exp ;
             # just need to compute it
             if i + 1 >= len(blocks) or not is_token(blocks[i+1], "semi"):
-                return 1, block, "Illegal expression"
+                return 1, block, "Expected ';' after expression"
             commands.append(block)
 
             i += 2
@@ -320,7 +334,7 @@ def parse_command(curr_pos: int, blocks: list,
             #  error ; 
             if i + 1 >= len(blocks) or \
                  not is_token(blocks[i+1], "semi"):
-                return 1, block, "Illegal Error Structure"
+                return 1, block, "Expected ';' after error"
             
             commands.append(ParserNode("error", block, []))
             
@@ -337,12 +351,13 @@ def parse_command(curr_pos: int, blocks: list,
                  not is_token(blocks[i + 2], "lcurly"):
                 
                 error_msg = "Illegal Def Structure"
-                if i + 3 >= len(blocks):
-                    error_msg = "Not enough tokens after def"
-                if not valid_signature(blocks[i + 1]):
+                
+                if i + 1 >= len(blocks) or not valid_signature(blocks[i + 1]):
                     error_msg = "def should be followed by a valid function signature"
-                if not is_token(blocks[i+2], "lcurly"):
-                    error_msg = "missing left curly after def"
+                
+                if i + 2 >= len(blocks) or not is_token(blocks[i+2], "lcurly"):
+                    error_msg = "missing '{' after def"
+
                 return 1, block, error_msg
             
             func_name = blocks[i + 1].children[0]
@@ -358,7 +373,7 @@ def parse_command(curr_pos: int, blocks: list,
             if i + 1 >= len(blocks) or \
                 not is_token(blocks[i], "rcurly") or \
                 not is_token(blocks[i+1], "semi"):
-                return 1, block, "Illegal Def Structure"
+                return 1, block, "Missing '};' after def"
 
             # func_command should be of ParserNode type: seq
             # if the first element is an assume, and/or the last is an assert
@@ -388,8 +403,8 @@ def parse_command(curr_pos: int, blocks: list,
         
         elif is_token(block, "forall"):
             # we're in a forall command
-            # # we expect:
-            # #  forall [variable] :: [assertion] ;
+            # we expect:
+            # forall [variable] :: [assertion] ;
             if i + 4 >= len(blocks) or \
                 not is_quantafiable(blocks[i + 1]) or \
                 not is_token(blocks[i+2], "::") or \
