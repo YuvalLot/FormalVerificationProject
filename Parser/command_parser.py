@@ -108,7 +108,7 @@ def parse_command(curr_pos: int, blocks: list,
             if i + 1 >= len(blocks) or \
                 not is_token(blocks[i], "rcurly") or \
                 not is_token(blocks[i+1], "semi"):
-                return 1, block, "Illegal While Structure"
+                return 1, block, "Expected end of block and semi-colon after while"
 
             # while_command should be of ParserNode type: seq
             # if the first element is an inv, pull it out and add it in the while
@@ -136,7 +136,8 @@ def parse_command(curr_pos: int, blocks: list,
                  not is_expression(blocks[i + 1]) or \
                  not is_token(blocks[i+2], "then") or \
                  not is_token(blocks[i+3], "lcurly"):
-                return 1, block, "Illegal If Structure"
+                 
+                return 1, block, "EOF error (unfinished If Structure)"
             
             if_cond = blocks[i + 1]
 
