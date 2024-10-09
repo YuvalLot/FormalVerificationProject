@@ -1,6 +1,2 @@
 
-assume thank = you;
-assert thank = you;
-while (1=1) {
-    applause;
-};
+if x then {} else {};

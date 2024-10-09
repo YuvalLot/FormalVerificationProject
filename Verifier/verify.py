@@ -30,14 +30,21 @@ def verify(code: ParserNode,
     # print(INT_VARIABLE_CORRESPONDENCE)
     
     if flags["annot"]:
+        print("==================================")
+        print("Annotated results:\n")
         print(code.annot)
+        print("=================================\n")
 
-    for (index, pair) in enumerate(vc):
-        (condition, line_number) = pair
+    vc = list(vc)
+    vc.sort(key=lambda p: p[1])
+    index = 0
+    for (condition, line_number) in vc:
         if line_number == -1:
             # this is the EOF verfication that is used to kickstart the verification 
             # process. We can ignore it
             continue
+            
+        index += 1
 
         if logical_conds != []:
             for func_cond in logical_conds:
@@ -45,7 +52,7 @@ def verify(code: ParserNode,
   
         if flags["VC"]:
             print("=================================")
-            print(f"VC #{index + 1}:\n{condition} in line number: {line_number}")
+            print(f"VC #{index}:\n{condition} in line number: {line_number}")
 
         solver = z3.Solver()
    

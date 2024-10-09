@@ -33,9 +33,6 @@ def parse(token_list: list[Token]):
             curr = []
         else:
             curr.append(tok)
-    
-    if len(curr) > 0:
-        return 1, "EOF error"
 
     for (i, block) in enumerate(blocks):
         if type(block) == Token:
