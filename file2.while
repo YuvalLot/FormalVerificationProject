@@ -7,3 +7,5 @@ def f(x) {
 };
 
 assert 5 = f(5);
+x := 3;
+print x;
