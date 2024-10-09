@@ -22,4 +22,5 @@ Main Options:
 6. main.py (file_name) -ignore_unknown
    when z3 cannot verify or disprove, continue.
 
-7. main.py (file_name) 
+7. main.py (file_name) -annot
+   print the code with annotations

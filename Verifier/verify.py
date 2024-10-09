@@ -37,6 +37,7 @@ def verify(code: ParserNode,
 
     vc = list(vc)
     vc.sort(key=lambda p: p[1])
+    
     index = 0
     for (condition, line_number) in vc:
         if line_number == -1:
