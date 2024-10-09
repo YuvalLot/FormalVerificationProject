@@ -22,5 +22,4 @@ Main Options:
 6. main.py (file_name) -ignore_unknown
    when z3 cannot verify or disprove, continue.
 
-7. main.py (file_name) -wlp
-   print the calculated wlp(s) (weakest liberal pre-condition) of the program
+7. main.py (file_name) 
