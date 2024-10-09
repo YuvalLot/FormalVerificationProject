@@ -12,7 +12,7 @@ This project is a formal verification tool designed to prove the correctness of 
 
 ## 'While' Language Syntax
 
-- **assignment**:
+- **Assignment**:
 ```c
 x := 0;
 y := (x + y) * 5;
@@ -29,7 +29,7 @@ else{
 - **`while` loops**:
 ```c
 while (condition){
-# Inveriant:
+# Invariant:
 inv [logical_expression];
 # code.... ;
 };
@@ -39,7 +39,12 @@ inv [logical_expression];
 assume [logical_expression];
 assert [logical_expression];
 ```
-- **functions**:
+- **Functions**:
+    - Returns one output, one single return at the end​ is allowed
+    - No use of global variables​
+    - Can not assign to input variables​
+    - The only free variables in pre-conditions are the inputs​
+    - The only free variables in post-conditions are the inputs + RET
 ```c
 def func_name(x1,...,xn) {
   assume [pre_conditions(x1,...,xn)];
@@ -48,21 +53,27 @@ def func_name(x1,...,xn) {
   assert [post_cond(RET,x1,...,xn)]; // e.g.: assert RET > 0 ;
 };
 ```
-- **suported expression**:
+- **supported expression**:
     - **Arithmetic symbols**:
-        - **Infix:**  +, -, /, % (The standart semantic...)
+        - **Infix:**  +, -, /, % (The standard semantic...)
         - **Prefix:**  +, - (e.g: -1, +3)
     - **conditional symbols**:
         - **Infix:**  >, <, >=, <=, =, !=, && (AND), || (OR), -> (implies), <-> (iff)
         - **Prefix:**  ! (not)
-    - **coments**: # (one line comment)
+    - **comments**: # (one line comment)
 
-- **Logical function**: function which are used in verfications properties that were not defined will be considered as Z3_function, can be used for prof.
-    - assumtion for a logical function syntaxt:
+- **Logical function**: function which are used in verifications properties that were not defined will be considered as Z3_function, can be used for proof.
+    - assumtion for a logical function syntax:
+        - should be wrriten only on the outer block, assumption will be applied in all code's blocks.
+        - Should not include free-varibles (which are not mentioned in the begining of statment).
+        - Z3 will probably get better results for bounded model checking.
+    - assumtion for a logical function syntax:
 ```c
-forall x:: [logical expression]
+forall x1,x2,...,xk:: [logical expression];
 # for example:
-forall x:: F(x) > 0
+forall x1,x2,...,xk:: F(x1) > 0 && ((x3 !=0) -> G(x2,x3) > 0);
+# Bounded Model Checking:
+forall x:: ((x < 20 && 0 < x) -> FACT(x) = x * FACT(x-1)) && (FACT(0) = 1);
 ```
 ## Usage
 1. **Install Z3 solver Package (if needed)**:
@@ -83,7 +94,7 @@ git clone https://github.com/YuvalLot/FormalVerificationProject.git
        - `-run`: execute the 'while' code.
        - `-pre`: print the Preprocessor results.
        - `-VC`: print the Verfication Condition set before trying to prove/unprove correctness.
-       - `-inner`: Shows assignments of temp varible on couner examples (temp varible weredefined by the prover and not by the user).
+       - `-inner`: Shows assignments of temp varible on couner examples (temp varible were defined by the prover and not by the user).
        - `-weak_post`:Use weak post conditions (i.e., remove the addition of the origin of inner variables that replace function uses).
        
 ## Dependencies
