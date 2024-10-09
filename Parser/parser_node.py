@@ -93,6 +93,8 @@ class ParserNode:
         # internal verification: for functions and loops, there are 
         # seperate internal verfications, which only need to be added once
         self.added_internal_verification = False
+
+        self.annot = ""
         
     def __str__(self) -> str:
         if self.name == "leaf":
@@ -311,6 +313,10 @@ class ParserNode:
         elif self.name == "comma":
             raw_string = ",".join(child.to_while_str() for child in self.children)
             raw_string = tabs + "(" + raw_string + ")"
+
+        elif self.name == "forall":
+            params, expression = self.children
+            raw_string = tabs + f"forall {params.to_while_str()} :: {expression.to_while_str()};"
 
         else:
             return "unknown"

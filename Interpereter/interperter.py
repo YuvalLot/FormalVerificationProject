@@ -290,7 +290,6 @@ def execute(node: ParserNode, env=None):
         return 0, value
 
     elif node.name == "def":
-        print(node.children)
         func_name, _, _, _, _ = node.children
         env.functions[func_name.value.value] = node
 

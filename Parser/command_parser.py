@@ -376,6 +376,7 @@ def parse_command(curr_pos: int, blocks: list,
             else:
                 func_asserts = None
 
+
             # structure of function:
             # (func_name, func_params, func_assumes, func_command, func_asserts)
             commands.append(
@@ -397,6 +398,9 @@ def parse_command(curr_pos: int, blocks: list,
                 return 1, block, "Illegal Forall Structure"
             variable = blocks[i+1]  # The variable(s) (e.g., x or y)
             assertion = blocks[i+3]  # The assertion using the variable
+
+            if not assertion.free_variables.issubset(variable.free_variables):
+                return 1, block, "Forall assertion should only contain quantified variables!"
 
             # Create the 'forall' ParserNode with the variable and assertion as children
             commands.append(ParserNode("forall", block, [variable, assertion]))

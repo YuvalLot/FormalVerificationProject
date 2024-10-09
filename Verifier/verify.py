@@ -25,9 +25,13 @@ def verify(code: ParserNode,
         print(code.to_while_str())
         print("=================================\n")
 
-    vc, logical_conds = verification_condition(z3.BoolVal(True), code, z3.BoolVal(True), -1)
+    vc, logical_conds = verification_condition(z3.BoolVal(True), code, z3.BoolVal(True), -1,
+                                               "" if flags["annot"] else None)
     # print(INT_VARIABLE_CORRESPONDENCE)
     
+    if flags["annot"]:
+        print(code.annot)
+
     for (index, pair) in enumerate(vc):
         (condition, line_number) = pair
         if line_number == -1:
@@ -74,6 +78,9 @@ def verify(code: ParserNode,
         if flags["VC"]:
             print("Verified!")
 
-
-    print("Verified!")
+    if flags["VC"]:
+        print("=================================")
+        print("Verified all VCs!")
+    else:
+        print("Verified!")
    

@@ -11,3 +11,8 @@ def get_free_vars(exp):
         ret += get_free_vars(child)
 
     return ret
+
+
+def join_conditions(conds):
+    return " ; ".join(f"{{{cond[0]}}}" for cond in conds)
+
