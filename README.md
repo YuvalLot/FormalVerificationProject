@@ -75,7 +75,7 @@ def func_name(x1,...,xn) {
 ```c
 forall x1,x2,...,xk :: [logical expression];
 # for example:
-forall x1,x2,...,xk :: F(x1) > 0 && ((x3 !=0) -> G(x2,x3) > 0);
+forall x1,x2,x3 :: F(x1) > 0 && ((x3 !=0) -> G(x2,x3) > 0);
 # Bounded Model Checking:
 forall x :: ((x < 20 && 0 < x) -> FACT(x) = x * FACT(x-1)) && (FACT(0) = 1);
 ```
