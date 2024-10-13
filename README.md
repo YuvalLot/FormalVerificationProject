@@ -92,12 +92,12 @@ git clone https://github.com/YuvalLot/FormalVerificationProject.git
      python main.py <filename> [-pre, -VC, -inner, -weak_post, -run]
      ```
    - Use **flags** for specific modes:
-       - `-run`: execute the 'while' code.
+       - `-run`: execute the 'while' code (in partiular, don't verify it).
        - `-pre`: print the Preprocessor results.
        - `-VC`: print the Verfication Condition set before trying to prove/unprove correctness.
        - `-inner`: Shows assignments of temp varible on couner examples (temp varible were defined by the prover and not by the user).
-       - `-weak_post`:Use weak post conditions (i.e., remove the addition of the origin of inner variables that replace function uses).
-       - `-annot`: print the original code with line by line calcukations of the wlp
+       - `-weak_post`: Use weak post conditions (i.e., remove the addition of the origin of inner variables that replace function uses). This is useful for tidying of the counter-examples as it removes the function interpertation z3 adds. 
+       - `-annot`: print the original code with line by line calculations of the wlp (if multiple conditions exist, they are separated by semi-colons).
        
 ## Dependencies
 - Python 3.x
