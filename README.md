@@ -8,7 +8,10 @@ This project is a formal verification tool designed to prove the correctness of 
 - **Tokenization**: Uses `Parser.Tokenizer` to break down the input text.
 - **Parsing**: Converts tokens into a structured format.
 - **Execution (optional)**: Runs the code if the `-run` flag is set.
-- **Verification**: Verifies the parsed code against formal rules.
+- **Verification**: Verifies the parsed code against formal rules. Verification has 3 stages:
+      - *Preprocessing*: Replace function applications by inner variables, and add the logic that defines the functions (asseert the pre conditions, assume the post condition).
+      - *Verfication Condition*: calculate the VC of the code.
+      - *Z3 solver*: Check if the VC is valid (i.e., it's negation isn't satisfiable) using z3.
 
 ## 'While' Language Syntax
 
