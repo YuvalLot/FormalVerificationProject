@@ -60,20 +60,21 @@ def func_name(x1,...,xn) {
     - **conditional symbols**:
         - **Infix:**  >, <, >=, <=, =, !=, && (AND), || (OR), -> (implies), <-> (iff)
         - **Prefix:**  ! (not)
-    - **comments**: # (one line comment)
+    - **comments**: # (one line comment),  /* (multi-line comment) */
 
 - **Logical function**: function which are used in verifications properties that were not defined will be considered as Z3_function, can be used for proof.
-    - assumtion for a logical function syntax:
+    - logical functions are not very useful without a "defintion". This is where the forall command comes in.
+    - assumtion for a forall syntax:
         - should be wrriten only on the outer block, assumption will be applied in all code's blocks.
         - Should not include free-varibles (which are not mentioned in the begining of statment).
         - Z3 will probably get better results for bounded model checking.
     - assumtion for a logical function syntax:
 ```c
-forall x1,x2,...,xk:: [logical expression];
+forall x1,x2,...,xk :: [logical expression];
 # for example:
-forall x1,x2,...,xk:: F(x1) > 0 && ((x3 !=0) -> G(x2,x3) > 0);
+forall x1,x2,...,xk :: F(x1) > 0 && ((x3 !=0) -> G(x2,x3) > 0);
 # Bounded Model Checking:
-forall x:: ((x < 20 && 0 < x) -> FACT(x) = x * FACT(x-1)) && (FACT(0) = 1);
+forall x :: ((x < 20 && 0 < x) -> FACT(x) = x * FACT(x-1)) && (FACT(0) = 1);
 ```
 ## Usage
 1. **Install Z3 solver Package (if needed)**:
@@ -108,6 +109,7 @@ Save this sample program in a file (e.g., `sample_program.while`):
 ```c
 x := 0;
 while (x < 5) {
+    inv x >= 0 && x < 6;
     x := x + 1;
 }
 assert(x = 5);
