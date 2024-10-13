@@ -97,6 +97,7 @@ git clone https://github.com/YuvalLot/FormalVerificationProject.git
        - `-VC`: print the Verfication Condition set before trying to prove/unprove correctness.
        - `-inner`: Shows assignments of temp varible on couner examples (temp varible were defined by the prover and not by the user).
        - `-weak_post`:Use weak post conditions (i.e., remove the addition of the origin of inner variables that replace function uses).
+       - `-annot`: print the original code with line by line calcukations of the wlp
        
 ## Dependencies
 - Python 3.x
