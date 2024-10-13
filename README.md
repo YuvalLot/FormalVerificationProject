@@ -11,7 +11,7 @@ This project is a formal verification tool designed to prove the correctness of 
 - **Verification**: Verifies the parsed code against formal rules. Verification has 3 stages:
     - *Preprocessing*: Replace function applications by inner variables, and add the logic that defines the functions (asseert the pre conditions, assume the post condition).
     - *Verfication Condition*: calculate the VC of the code.
-    - *Z3 solver*: Check if the VC is valid (i.e., it's negation isn't satisfiable) using z3.
+    - *Z3 solver*: Check if the VC is valid (i.e., its negation isn't satisfiable) using z3.
 
 ## 'While' Language Syntax
 
