@@ -89,7 +89,7 @@ forall x :: ((x < 20 && 0 < x) -> FACT(x) = x * FACT(x-1)) && (FACT(0) = 1);
 git clone https://github.com/YuvalLot/FormalVerificationProject.git
    ```
 3. **Run the Verifier**:
-   - Default verification file: `file1.while`
+   - Default verification file: `very_fire.while`
    - Or specify a file to verify:
      ```bash
      python main.py <filename> [-pre, -VC, -inner, -weak_post, -run]
