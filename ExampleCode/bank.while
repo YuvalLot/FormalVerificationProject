@@ -1,8 +1,11 @@
-assume x >= 0;
-sum := 0; i := 0;
-while (i != x + 1) {
-    inv sum = ((i - 1) * i) / 2;
-    sum := sum + 1;
-    i := i + 1;
+assume old_bank = bank && bank >= 0;
+
+if (bank < withdraw || withdraw < 0) then {
+    money := 0;
+} else {
+    money := withdraw;
+    bank := bank - withdraw;
 };
-assert sum = (x * (x + 1)) / 2;
+
+assert bank >= 0;
+assert bank <= old_bank;
