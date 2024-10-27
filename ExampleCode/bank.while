@@ -1,0 +1,8 @@
+assume x >= 0;
+sum := 0; i := 0;
+while (i != x + 1) {
+    inv sum = ((i - 1) * i) / 2;
+    sum := sum + 1;
+    i := i + 1;
+};
+assert sum = (x * (x + 1)) / 2;
