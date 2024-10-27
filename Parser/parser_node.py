@@ -50,15 +50,6 @@ class ParserNode:
         if any(child and not child.is_loop_free for child in children):
             self.is_loop_free = False
 
-        # all functions called in this 
-        self.function_calls = []
-        if self.name == "apply":
-            self.function_calls.append(self.children[0])
-        
-        for child in self.children:
-            if child is not None:
-                self.function_calls += child.function_calls
-
         # free variables in this parser node
         self.free_variables = set()
         if self.name == "leaf" and self.value.name == "var":

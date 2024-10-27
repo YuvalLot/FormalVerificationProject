@@ -1,10 +1,11 @@
-def f(x) {
+
+
+def f(x){
     return x;
-    assert RET = x;
 };
 
 y := 1;
-while (f(y) < 9) {
+while (f(y) < 9){
     inv y > 0;
     y := y + 1;
 };
