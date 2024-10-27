@@ -1,4 +1,0 @@
-TODO List:
-  1. Go over ExampleCode's examples. Make sure they all make sense and up to date.
-  2. Go over the notes in the presentation and resolve all of them.
-  3. Write automated testing (just around 20ish examples, 10 that should verify, 10 that souldn't)

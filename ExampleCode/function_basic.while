@@ -6,10 +6,10 @@ def f(x) {
     } else {
         ret := x + f(x - 1);
         
-        /*
+        /* Pre Processor Result
         assert x - 1 >= 0;
-        assume @temp1 = (x-1) * ((x-1) + 1) / 2;
-        ret := x + @temp1;
+        assume @0 = (x-1) * ((x-1) + 1) / 2;
+        ret := x + @0;
         */
     };
     return ret;

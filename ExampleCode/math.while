@@ -2,3 +2,5 @@
 z := (x * y) / y + 5 * (x - y) + (2 * 3) * (1 / (1 / y));
 
 assert z = 6 * x + y;
+
+# should not pass verification due to integer division!
