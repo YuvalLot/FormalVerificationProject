@@ -7,6 +7,7 @@ import sys
 
 from Verifier.verify import verify
 from Verifier.PreVeriferProcessing.preprocessor import preprocess
+from Verifier.PreVeriferProcessing.expression_trans import INT_VARIABLE_INFLUENCE
 
 from main_options import get_main_options
 

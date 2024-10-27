@@ -1,9 +1,11 @@
 
+from collections import defaultdict
 from Parser.parser_node import ParserNode
 from Parser.Tokenizer.tokens import Token
 
 INT_VARIABLE_COUNT = 0
 INT_VARIABLE_CORRESPONDENCE = {}
+INT_VARIABLE_INFLUENCE = defaultdict(set)
 
 # for success, return a triplet of items:
 # (
@@ -98,6 +100,8 @@ def expression_trans(expression: ParserNode, functions: dict[str, ParserNode],
                                                          expression.value.charno), [], 
                                                          is_expression = True)
             INT_VARIABLE_CORRESPONDENCE[f"@{INT_VARIABLE_COUNT}"] = expression
+            for variable in expression.free_variables:
+                INT_VARIABLE_INFLUENCE[variable].add(f"@{INT_VARIABLE_COUNT}")
             INT_VARIABLE_COUNT += 1
 
             if func_pre is not None:

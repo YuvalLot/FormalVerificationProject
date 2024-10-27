@@ -1,6 +1,7 @@
 
 from Parser.parser_node import ParserNode
 from Verifier.helper import get_free_vars, join_conditions
+from Verifier.PreVeriferProcessing.expression_trans import INT_VARIABLE_INFLUENCE
 import z3
 
 """
@@ -217,7 +218,13 @@ def weakest_liberal_pre(code: ParserNode,
         while_cond = while_cond.to_z3_bool() 
 
         involved_variables : set = while_body.changing_vars
+        all_involved_variables = set()
+        for involved_var in involved_variables:
+            all_involved_variables.add(involved_var)
+            all_involved_variables.update(INT_VARIABLE_INFLUENCE[involved_var])
 
+
+        involved_variables = all_involved_variables
         """
         old approach:
         side_effects.append(
