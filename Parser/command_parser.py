@@ -423,7 +423,7 @@ def parse_command(curr_pos: int, blocks: list,
             i += 5  # Move past the forall structure
 
         else:
-            return 1, block, "Illegal command"
+            return 1, block, f"Illegal command: '{block.value}'"
         
     
     seq = ParserNode("seq", block, commands)

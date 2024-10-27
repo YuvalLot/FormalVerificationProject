@@ -1,0 +1,6 @@
+if (x = 0) then {
+    y := 1;
+} else {
+    y := x * x;
+};
+assert y > 0;
