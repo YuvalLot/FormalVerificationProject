@@ -1,7 +1,7 @@
 
 # Formal Verification Verifier
 
-This project is a formal verification tool designed to prove the correctness of simple programs that use only integer variables, `while` loops, and `if-else` statements, and functions. The tool ensures small-scale program properties and behaviors meet specified expectations.
+This project is a formal verification tool designed to prove the correctness of simple programs that use only integer variables, `while` loops, and `if-else` statements, and functions. The tool ensures small-scale program properties and behaviors meet specified expectations.   
 
 ## Project Structure
 
