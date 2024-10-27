@@ -225,6 +225,7 @@ def weakest_liberal_pre(code: ParserNode,
 
 
         involved_variables = all_involved_variables
+        
         """
         old approach:
         side_effects.append(
@@ -236,14 +237,20 @@ def weakest_liberal_pre(code: ParserNode,
         # is preserved 
         # if the internal verification has alreay been added, no need to add again
         if not code.added_internal_verification:
+            
             new_annot = "\t" + annot if annot is not None else None
-            wlps_while_inv, _ = weakest_liberal_pre(
-                while_body, while_inv, while_inv_line, side_effects, new_annot
+
+            # the body of the loop already includes all that is needed to verify that the 
+            # loop invariant is preserved 
+            side_effects.update(
+                verification_condition(z3.BoolVal(True), while_body, z3.BoolVal(True), 
+                                       while_inv_line, new_annot)[0]
             )
             if annot is not None:
                 code.annot = annot + f"while ({code.children[0].to_while_str()}) {{\n" + \
                     while_body.annot + "\n" + annot + "}"
 
+            """
             for (wlp_inv, lines_derived) in wlps_while_inv:
                 
                 side_effects.add(
@@ -252,7 +259,8 @@ def weakest_liberal_pre(code: ParserNode,
                         lines_derived
                     )
                 )
-            
+            """
+
             code.added_internal_verification = True
 
         dictionary = []

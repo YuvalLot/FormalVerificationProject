@@ -65,9 +65,10 @@ def preprocess(code: ParserNode, functions = None, flags = None):
         while_cond_logics, while_cond_new = expression_trans(while_cond, functions, flags)
         if while_inv is not None:
             while_inv_logics, while_inv_new = expression_trans(while_inv.children[0], functions, flags)
+            while_inv_logics2, while_inv_new2 = expression_trans(while_inv.children[0], functions, flags)
         else:
-            while_inv_logics = []
-            while_inv_new = None
+            while_inv_logics = while_inv_logics2 = []
+            while_inv_new = while_inv_new2 = None
         while_body_new = preprocess(while_body, functions.copy(), flags)
 
         return while_cond_logics + while_inv_logics + [
@@ -75,9 +76,18 @@ def preprocess(code: ParserNode, functions = None, flags = None):
                 while_cond_new, 
                 ParserNode("inv", while_inv.value, [while_inv_new]) 
                 if while_inv is not None else None,
-                ParserNode("seq", while_body.value, while_body_new + 
-                                                    while_cond_logics + 
-                                                    while_inv_logics)
+                ParserNode("seq", while_body.value, 
+                           while_inv_logics + [
+                               ParserNode("assume", while_inv.value, [while_inv_new]) 
+                            ] + while_cond_logics + [
+                               ParserNode("assume", while_cond.value, [
+                                   ParserNode("op!", while_cond.value, [while_cond_new], 
+                                              is_expression=True)
+                               ]) 
+                             ] + while_body_new + 
+                           while_inv_logics2 + [
+                               ParserNode("assert", while_inv.value, [while_inv_new2]) 
+                           ])
             ])
         ] + while_cond_logics + while_inv_logics
 

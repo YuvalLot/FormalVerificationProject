@@ -14,6 +14,10 @@ class Token:
     
     def __repr__(self) -> str:
         return str(self)
+    
+    def __neg__(self):
+        return Token(self.name, self.value, -self.lineno, self.charno)
+
 
 def tokenize(input_string):
     tokens = []

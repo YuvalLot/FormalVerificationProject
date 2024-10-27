@@ -25,7 +25,7 @@ def verify(code: ParserNode,
         print(code.to_while_str())
         print("=================================\n")
 
-    vc, logical_conds = verification_condition(z3.BoolVal(True), code, z3.BoolVal(True), -1,
+    vc, logical_conds = verification_condition(z3.BoolVal(True), code, z3.BoolVal(True), 0,
                                                "" if flags["annot"] else None)
     # print(INT_VARIABLE_CORRESPONDENCE)
     
@@ -40,10 +40,13 @@ def verify(code: ParserNode,
     
     index = 0
     for (condition, line_number) in vc:
-        if line_number == -1:
+        if line_number == 0:
             # this is the EOF verfication that is used to kickstart the verification 
             # process. We can ignore it
             continue
+
+        if line_number < 0:
+            line_number = f"{-line_number} (invariant preserved)"
             
         index += 1
 
