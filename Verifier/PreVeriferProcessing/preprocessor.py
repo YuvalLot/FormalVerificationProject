@@ -80,10 +80,7 @@ def preprocess(code: ParserNode, functions = None, flags = None):
                            while_inv_logics + [
                                ParserNode("assume", while_inv.value, [while_inv_new]) 
                             ] + while_cond_logics + [
-                               ParserNode("assume", while_cond.value, [
-                                   ParserNode("op!", while_cond.value, [while_cond_new], 
-                                              is_expression=True)
-                               ]) 
+                               ParserNode("assume", while_cond.value, [while_cond_new]) 
                              ] + while_body_new + 
                            while_inv_logics2 + [
                                ParserNode("assert", while_inv.value, [while_inv_new2]) 
