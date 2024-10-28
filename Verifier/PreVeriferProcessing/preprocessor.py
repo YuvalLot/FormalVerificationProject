@@ -74,7 +74,7 @@ def preprocess(code: ParserNode, functions = None, flags = None):
                 while_cond, 
                 while_inv,
                 ParserNode("seq", while_body.value, 
-                           while_body_new + while_inv_logics)
+                           while_inv_logics + while_cond_logics + while_body_new + while_inv_logics + while_cond_logics)
             ])
         ] + while_cond_logics + while_inv_logics
 

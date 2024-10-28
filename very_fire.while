@@ -1,11 +1,14 @@
 
 
 def f(x){
+    assume x >= 0;
     return x;
     assert RET = x;
 };
 
-while (f(y) > 0) {
+assume y > 0;
+while (y > 1 && f(y) > 0) {
     y := y - 1;
 };
-assert y <= 0;
+
+
