@@ -5,11 +5,7 @@ def f(x){
     assert RET = x;
 };
 
-y := 1;
-while (f(y) != 9){
-    inv f(y) > 0;
-    y := y + 1;
-}; 
-
-assert y = 9;
-
+while (f(y) > 0) {
+    y := y - 1;
+};
+assert y <= 0;

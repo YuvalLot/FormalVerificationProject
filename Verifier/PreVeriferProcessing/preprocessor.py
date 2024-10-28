@@ -17,7 +17,7 @@ def preprocess(code: ParserNode, functions = None, flags = None):
         new_commands = []
         for command in commands:
             if command.name == "def":
-                functions[command.children[0].value.value] = command
+                functions[command.children[0].value.value] = (command)
 
         for command in commands:
             new_commands += preprocess(command, functions.copy(), flags)
@@ -26,14 +26,14 @@ def preprocess(code: ParserNode, functions = None, flags = None):
 
 
     elif code.is_expression:
-        logics, exp = expression_trans(code, functions, flags)
-        return logics + [exp]
+        logics = expression_trans(code, functions, flags)
+        return logics + [code]
     
     elif code.name == "assign":
         variable = code.children[0]
         expression = code.children[1]
-        (logics, new_exp) = expression_trans(expression, functions, flags)
-        return logics + [ParserNode("assign", code.value, [variable, new_exp])]
+        logics = expression_trans(expression, functions, flags)
+        return logics + [ParserNode("assign", code.value, [variable, expression])]
     
     elif code.name in ["skip", "print"]:
         return [code]
@@ -42,49 +42,39 @@ def preprocess(code: ParserNode, functions = None, flags = None):
 
         if_cond, then_code, else_code = code.children
 
-        (logics_cond, new_cond) = expression_trans(if_cond, functions, flags)
+        logics_cond = expression_trans(if_cond, functions, flags)
         new_then_codes = preprocess(then_code, functions.copy(), flags)
         new_else_codes = preprocess(else_code, functions.copy(), flags)
 
         return logics_cond + [
             ParserNode("if", code.value, 
-                       [new_cond, 
+                       [if_cond, 
                         ParserNode("seq", then_code.value, new_then_codes), 
                         ParserNode("seq", else_code.value, new_else_codes)])
         ]
         
     elif code.name in ["assert", "assume", "return"]:
         expression = code.children[0]
-        (logics, new_exp) = expression_trans(expression, functions, flags)
-        return logics + [ParserNode(code.name, code.value, [new_exp])]
+        logics = expression_trans(expression, functions, flags)
+        return logics + [ParserNode(code.name, code.value, [expression])]
 
 
     elif code.name == "while":
         while_cond, while_inv, while_body = code.children
         
-        while_cond_logics, while_cond_new = expression_trans(while_cond, functions, flags)
+        while_cond_logics = expression_trans(while_cond, functions, flags)
         if while_inv is not None:
-            while_inv_logics, while_inv_new = expression_trans(while_inv.children[0], functions, flags)
-            while_inv_logics2, while_inv_new2 = expression_trans(while_inv.children[0], functions, flags)
+            while_inv_logics = expression_trans(while_inv.children[0], functions, flags)
         else:
-            while_inv_logics = while_inv_logics2 = []
-            while_inv_new = while_inv_new2 = None
+            while_inv_logics = []
         while_body_new = preprocess(while_body, functions.copy(), flags)
 
         return while_cond_logics + while_inv_logics + [
             ParserNode("while", code.value, [
-                while_cond_new, 
-                ParserNode("inv", while_inv.value, [while_inv_new]) 
-                if while_inv is not None else None,
+                while_cond, 
+                while_inv,
                 ParserNode("seq", while_body.value, 
-                           while_inv_logics + [
-                               ParserNode("assume", while_inv.value, [while_inv_new]) 
-                            ] + while_cond_logics + [
-                               ParserNode("assume", while_cond.value, [while_cond_new]) 
-                             ] + while_body_new + 
-                           while_inv_logics2 + [
-                               ParserNode("assert", while_inv.value, [while_inv_new2]) 
-                           ])
+                           while_body_new + while_inv_logics)
             ])
         ] + while_cond_logics + while_inv_logics
 

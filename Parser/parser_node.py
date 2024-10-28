@@ -87,6 +87,11 @@ class ParserNode:
 
         self.annot = ""
         
+        self.verification_desc = None
+        if self.name == "assert":
+            self.verification_desc = f"assertion in line {value.lineno}"
+
+
     def __str__(self) -> str:
         if self.name == "leaf":
             return self.value.value
@@ -174,6 +179,11 @@ class ParserNode:
                 self.name, self.value, [func_name, func_param], is_expression=True
             )
         
+        elif self.name in ["assume", "assert"]:
+            return ParserNode(self.name, self.value, 
+                              [self.children[0].substitute(dictionary)], 
+                              self.is_expression)
+
         raise Exception(f"Not suppoerted (yet...): {self.name}")
 
     def to_z3_inner(self):

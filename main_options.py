@@ -1,7 +1,7 @@
 import sys
 
 
-DEFINED_FLAGS = ["-pre", "-VC", "-inner", "-weak_post", "-run", "-ignore_unknown", "-annot"]
+DEFINED_FLAGS = ["-pre", "-VC", "-inner", "-run", "-ignore_unknown", "-annot"]
 
 true_values = {"true", "1", "yes", "on"}
 false_values = {"false", "0", "no", "off"}

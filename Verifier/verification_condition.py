@@ -1,7 +1,6 @@
 
 from Parser.parser_node import ParserNode
 from Verifier.helper import get_free_vars, join_conditions
-from Verifier.PreVeriferProcessing.expression_trans import INT_VARIABLE_INFLUENCE
 import z3
 
 """
@@ -36,11 +35,11 @@ returns: set[ ( z3.BoolRef, int ) ], list[ (z3.BoolRef) ]
 def verification_condition(pre_cond: z3.BoolRef, 
                            code: ParserNode, 
                            post_cond: z3.BoolRef, 
-                           post_line_no: int,
+                           post_desc: str,
                            annot):
 
     side_eff = set()
-    wlps_linenos, logical_functions = weakest_liberal_pre(code, post_cond, post_line_no, side_eff, annot)
+    wlps_linenos, logical_functions = weakest_liberal_pre(code, post_cond, post_desc, side_eff, annot)
 
     return side_eff.union(
         {(z3.Implies(pre_cond, wlp), lineno) for (wlp, lineno) in wlps_linenos}), logical_functions
@@ -57,11 +56,11 @@ P: the weakest precondition {P} so that {P}code{Q} is valid,
    The reason this is a list, and not an AND clause of all the items in the list, 
    is that we can track which requirements came from which lines
 
-post_line_no: line number that derive P (for debugging purposes)
+post_desc: str that derives P (for debugging purposes)
 """
 def weakest_liberal_pre(code: ParserNode,
                         post_cond: z3.BoolRef,
-                        post_line_no: int,
+                        post_desc: str,
                         side_effects: set[(z3.BoolRef, int)],
                         annot):
     
@@ -83,20 +82,20 @@ def weakest_liberal_pre(code: ParserNode,
         if annot is not None:
             code.annot = annot + code.to_while_str()
 
-        return { (updated_post, post_line_no) }, []
+        return { (updated_post, post_desc) }, []
     
     if code.name in ["skip", "print"] or code.is_expression:
         if annot is not None:
             code.annot = annot + code.to_while_str()
-        return {(post_cond, post_line_no)}, []
+        return {(post_cond, post_desc)}, []
     
     if code.name == "if":
 
         if_cond, then_code, else_code = code.children
         if_cond = if_cond.to_z3_bool()
         new_annot = "\t" + annot if annot is not None else None
-        then_wlps, _ = weakest_liberal_pre(then_code, post_cond, post_line_no, side_effects, new_annot)
-        else_wlps, _ = weakest_liberal_pre(else_code, post_cond, post_line_no, side_effects, new_annot)
+        then_wlps, _ = weakest_liberal_pre(then_code, post_cond, post_desc, side_effects, new_annot)
+        else_wlps, _ = weakest_liberal_pre(else_code, post_cond, post_desc, side_effects, new_annot)
 
         ret = set()
 
@@ -124,7 +123,7 @@ def weakest_liberal_pre(code: ParserNode,
         return ret, []
 
     if code.name == "seq": 
-        current_posts = {(post_cond, post_line_no)}
+        current_posts = {(post_cond, post_desc)}
         if annot is not None:
             code.annot = annot + join_conditions(current_posts)
        # to verify a sequence, calculate the wlp of each statement in reverse order
@@ -179,10 +178,10 @@ def weakest_liberal_pre(code: ParserNode,
             code.annot = annot + code.to_while_str()
 
         if post_cond == z3.BoolVal(True):
-            return {(condition_asserted, code.value.lineno)}, []
+            return {(condition_asserted, code.verification_desc)}, []
         
-        return {(condition_asserted, code.value.lineno), 
-            (z3.Implies(condition_asserted, post_cond), post_line_no)}, []
+        return {(condition_asserted, code.verification_desc), 
+            (z3.Implies(condition_asserted, post_cond), post_desc)}, []
         
     
     if code.name == "assume":
@@ -200,7 +199,7 @@ def weakest_liberal_pre(code: ParserNode,
             code.annot = annot + code.to_while_str()
 
         condition_assumed = code.children[0].to_z3_bool()
-        return {(z3.Implies(condition_assumed, post_cond), post_line_no)}, []
+        return {(z3.Implies(condition_assumed, post_cond), post_desc)}, []
 
     if code.name == "while":
 
@@ -218,18 +217,11 @@ def weakest_liberal_pre(code: ParserNode,
         while_cond = while_cond.to_z3_bool() 
 
         involved_variables : set = while_body.changing_vars
-        all_involved_variables = set()
-        for involved_var in involved_variables:
-            all_involved_variables.add(involved_var)
-            all_involved_variables.update(INT_VARIABLE_INFLUENCE[involved_var])
-
-
-        involved_variables = all_involved_variables
         
         """
         old approach:
         side_effects.append(
-            (z3.Implies(z3.And(while_inv, z3.Not(while_cond)), post_cond), post_line_no),
+            (z3.Implies(z3.And(while_inv, z3.Not(while_cond)), post_cond), post_desc),
         )
         """
 
@@ -242,15 +234,14 @@ def weakest_liberal_pre(code: ParserNode,
 
             # the body of the loop already includes all that is needed to verify that the 
             # loop invariant is preserved 
-            side_effects.update(
-                verification_condition(z3.BoolVal(True), while_body, z3.BoolVal(True), 
-                                       while_inv_line, new_annot)[0]
-            )
+            
+            wlps_while_inv, _ = weakest_liberal_pre(while_body, while_inv, 
+                                                 f"invarinat in line {while_inv_line} preserved", side_effects, new_annot)
+            
             if annot is not None:
                 code.annot = annot + f"while ({code.children[0].to_while_str()}) {{\n" + \
                     while_body.annot + "\n" + annot + "}"
 
-            """
             for (wlp_inv, lines_derived) in wlps_while_inv:
                 
                 side_effects.add(
@@ -259,7 +250,6 @@ def weakest_liberal_pre(code: ParserNode,
                         lines_derived
                     )
                 )
-            """
 
             code.added_internal_verification = True
 
@@ -277,16 +267,16 @@ def weakest_liberal_pre(code: ParserNode,
         undefined_cond = z3.substitute(while_cond, dictionary)   
         undefined_post = z3.substitute(post_cond, dictionary)
 
-        return {(while_inv, while_inv_line), 
+        return {(while_inv, f"invariant in line {while_inv_line} is true in first iteration"), 
                 (z3.Implies(
                     z3.And(undefined_inv, z3.Not(undefined_cond)), 
-                    undefined_post), post_line_no)
+                    undefined_post), post_desc)
         }, []
 
     if code.name == "error":
         if annot is not None: 
             code.annot = annot + code.to_while_str()
-        return {z3.BoolVal(False), code.value.lineno}, []
+        return {z3.BoolVal(False), f"error in {code.value.lineno} unreachable"}, []
 
     if code.name == "def": 
         """
@@ -311,7 +301,7 @@ def weakest_liberal_pre(code: ParserNode,
                     func_code.annot + "\n" + annot + "};"
 
         # other than the side effects, function definition essentially acts as a skip;
-        return {(post_cond, post_line_no)}, []
+        return {(post_cond, post_desc)}, []
 
     if code.name == "return":
         # {P} return e; {Q} 
@@ -323,7 +313,7 @@ def weakest_liberal_pre(code: ParserNode,
                                      (INNER_RET_VARIABLE, code.children[0].to_z3_int())
                                      )
         
-        return {(updated_post, post_line_no)}, []
+        return {(updated_post, post_desc)}, []
 
     if code.name == "forall":
         variable = code.children[0]
@@ -338,7 +328,7 @@ def weakest_liberal_pre(code: ParserNode,
         if annot is not None: 
             code.annot = annot + code.to_while_str()
     
-        return {(post_cond, post_line_no)}, [forall_assumption]
+        return {(post_cond, post_desc)}, [forall_assumption]
 
 
     else:

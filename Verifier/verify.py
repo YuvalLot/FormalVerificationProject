@@ -2,7 +2,7 @@
 from Parser.parser import ParserNode
 from Verifier.verification_condition import verification_condition, UNDEFINED_VAR_TRANS
 from Verifier.PreVeriferProcessing.preprocessor import preprocess
-from Verifier.PreVeriferProcessing.expression_trans import INT_VARIABLE_CORRESPONDENCE
+
 
 import z3
 
@@ -25,7 +25,7 @@ def verify(code: ParserNode,
         print(code.to_while_str())
         print("=================================\n")
 
-    vc, logical_conds = verification_condition(z3.BoolVal(True), code, z3.BoolVal(True), 0,
+    vc, logical_conds = verification_condition(z3.BoolVal(True), code, z3.BoolVal(True), "",
                                                "" if flags["annot"] else None)
     # print(INT_VARIABLE_CORRESPONDENCE)
     
@@ -36,17 +36,13 @@ def verify(code: ParserNode,
         print("=================================\n")
 
     vc = list(vc)
-    vc.sort(key=lambda p: p[1])
     
     index = 0
-    for (condition, line_number) in vc:
-        if line_number == 0:
+    for (condition, cond_desc) in vc:
+        if cond_desc == "":
             # this is the EOF verfication that is used to kickstart the verification 
             # process. We can ignore it
             continue
-
-        if line_number < 0:
-            line_number = f"{-line_number} (invariant preserved)"
             
         index += 1
 
@@ -56,7 +52,7 @@ def verify(code: ParserNode,
   
         if flags["VC"]:
             print("=================================")
-            print(f"VC #{index}:\n{condition} in line number: {line_number}")
+            print(f"VC #{index}:\n{condition}: {cond_desc}")
 
         solver = z3.Solver()
    
@@ -64,7 +60,7 @@ def verify(code: ParserNode,
         status = solver.check()
 
         if status == z3.sat:
-            print(f"Unable to verify condition in line {line_number}, e.g.:\n[")
+            print(f"Unable to verify: {cond_desc}, e.g.:\n[")
             model = solver.model()
             for v in model:
                 name = v.name()
@@ -81,7 +77,7 @@ def verify(code: ParserNode,
             return
     
         if status == z3.unknown:
-            print(f"Unable to prove or disprove line {line_number}")
+            print(f"Unable to prove or disprove: {cond_desc}")
             if flags["ignore_unknown"]:
                 continue
             return

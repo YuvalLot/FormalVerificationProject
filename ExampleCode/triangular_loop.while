@@ -6,11 +6,6 @@ while (i != x + 1) {
     inv i >= 0 && sum = ((i - 1) * i) / 2;
     sum := sum + i;
     i := i + 1;
-    if (sum > 100) then {
-        sum := sum - 1;
-    } else {
-        skip;
-    };
 };
 
 assert sum = (x * (x + 1)) / 2;

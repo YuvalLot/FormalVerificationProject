@@ -12,15 +12,11 @@ Main Options:
    show the inner variables' assignments (inner variables = variables added in the 
    preprocessing phase).
 
-4. main.py (file_name) -weak_post
-   Use weak post conditions (i.e., remove the addition of the origin of inner 
-   variables that replace function uses)
-
-5. main.py (file_name) -run
+4. main.py (file_name) -run
    runs (interprets) the code instead of verifying it.
 
-6. main.py (file_name) -ignore_unknown
+5. main.py (file_name) -ignore_unknown
    when z3 cannot verify or disprove, continue.
 
-7. main.py (file_name) -annot
+6. main.py (file_name) -annot
    print the code with annotations

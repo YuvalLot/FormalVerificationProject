@@ -1,6 +1,6 @@
-assume old_bank = bank && bank >= 0;
+assume old_bank = bank;
 
-if (bank < withdraw || withdraw < 0) then {
+if (bank < withdraw) then {
     money := 0;
 } else {
     money := withdraw;
