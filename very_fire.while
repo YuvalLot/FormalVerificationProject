@@ -6,9 +6,10 @@ def f(x){
     assert RET = x;
 };
 
-assume y > 0;
-while (y > 1 && f(y) > 0) {
-    y := y - 1;
+y := 1;
+while (f(y) < 10) {
+    inv y > 0;
+    y := y + 1;
 };
 
 
