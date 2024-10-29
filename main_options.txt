@@ -8,15 +8,11 @@ Main Options:
    reveales all of the verification conditions that are checked in the verification 
    process.
 
-3. main.py (file_name) -inner
-   show the inner variables' assignments (inner variables = variables added in the 
-   preprocessing phase).
-
-4. main.py (file_name) -run
+3. main.py (file_name) -run
    runs (interprets) the code instead of verifying it.
 
-5. main.py (file_name) -ignore_unknown
+4. main.py (file_name) -ignore_unknown
    when z3 cannot verify or disprove, continue.
 
-6. main.py (file_name) -annot
+5. main.py (file_name) -annot
    print the code with annotations
