@@ -9,7 +9,7 @@ This project is a formal verification tool designed to prove the correctness of 
 - **Parsing**: Converts tokens into a structured format.
 - **Execution (optional)**: Runs the code if the `-run` flag is set.
 - **Verification**: Verifies the parsed code against formal rules. Verification has 3 stages:
-    - *Preprocessing*: Replace function applications by inner variables, and add the logic that defines the functions (asseert the pre conditions, assume the post condition).
+    - *Preprocessing*: add the logic that defines the functions (assert the pre conditions, assume the post condition).
     - *Verfication Condition*: calculate the VC of the code.
     - *Z3 solver*: Check if the VC is valid (i.e., its negation isn't satisfiable) using z3.
 
@@ -92,16 +92,16 @@ git clone https://github.com/YuvalLot/FormalVerificationProject.git
    - Default verification file: `very_fire.while`
    - Or specify a file to verify:
      ```bash
-     python main.py <filename> [-pre, -VC, -inner, -weak_post, -run]
+     python main.py <filename> [-pre, -VC, -inner, -run, -ignore_unknown]
      ```
    - Use **flags** for specific modes:
        - `-run`: execute the 'while' code (in partiular, don't verify it).
        - `-pre`: print the Preprocessor results.
-       - `-VC`: print the Verfication Condition set before trying to prove/unprove correctness.
-       - `-inner`: Shows assignments of temp varible on couner examples (temp varible were defined by the prover and not by the user).
-       - `-weak_post`: Use weak post conditions (i.e., remove the addition of the origin of inner variables that replace function uses). This is useful for tidying of the counter-examples as it removes the function interpertation z3 adds. 
+       - `-VC`: print the Verfication Condition set before trying to prove/unprove correctness..
+       - `-ignore_unknown`: ignores assertions that cannot be verified or disproved
        - `-annot`: print the original code with line by line calculations of the wlp (if multiple conditions exist, they are separated by semi-colons).
-       
+
+
 ## Dependencies
 - Python 3.x
 - Z3 4.13.0.0

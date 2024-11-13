@@ -1,5 +1,13 @@
 
-forall x :: (x > 0 && x < 20) -> FACT(x) = x * FACT(x-1);
-assume FACT(0) = 1;
+forall x :: (x > 0 && x < 20) -> FACT(x) = x * FACT(x-1) && FACT(0) = 1;
+def fact(x) {
+    assume x >= 0 && x < 20;
+    if x = 0 then {
+        return 1;
+    } else {
+       return x * fact(x - 1);
+    };
+    assert RET = FACT(x);
+};
 
-assert FACT(5) != x;
+assert fact(5) != x;

@@ -68,7 +68,7 @@ def verify(code: ParserNode,
                     name, lineno = UNDEFINED_VAR_TRANS[name]
                     name = f"{name} [AFTER LOOP IN LINE {lineno}]"
                 
-                if name[0] == "@" and not flags["inner"]:
+                if name[0] == "@":
                     # internal variable
                     continue
                 
